@@ -8,6 +8,15 @@ C++/Qt 6 port and Linux port: Frédéric Biron ([morfredus](https://github.com/m
 
 ## [Unreleased]
 
+### Removed
+
+- Unused CMake option `ANTREN_INSTALL_DESKTOP_ID` (`CMakeLists.txt`): nothing read it; `ANTRENAMER_DESKTOP_ID` is the variable in use.
+
+### Changed
+
+- Flatpak manifests (`fr.morfredus.AntRenamerQt.yaml`, `.local.yaml`): `-DANTRENAMER_DESKTOP_ID=fr.morfredus.AntRenamerQt` is no longer passed to CMake, so the desktop file and the icons are installed under their plain names (`antrenamer-qt`), and `rename-icon: antrenamer-qt` and `rename-desktop-file: antrenamer-qt.desktop` make `flatpak-builder` rename them to the app id (Flathub review). To check on a build: the `Icon=` line and the `launchable` of the installed MetaInfo.
+- `docs/TESTED_PLATFORMS.md` (EN, FR): 3.1.2-beta.5 installed from the published installer on Windows 11.
+
 ## [3.1.2-beta.5] - 2026-11-14
 
 Pre-release of 3.1.2: the new-version window, the UCRT64 toolchain and the clean-up since 3.1.2-beta.4.
