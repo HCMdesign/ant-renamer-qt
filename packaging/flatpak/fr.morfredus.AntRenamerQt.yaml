@@ -14,7 +14,7 @@ modules:
   - name: antrenamer-qt
     buildsystem: simple
     build-commands:
-      - cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/app -DANTRENAMER_DESKTOP_ID=fr.morfredus.AntRenamerQt
+      - cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/app
       - cmake --build build --target antrenamer-qt
       - cmake --install build
     sources:

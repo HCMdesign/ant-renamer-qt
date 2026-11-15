@@ -11,11 +11,6 @@ include(GNUInstallDirs)
 set(ANTRENAMER_DESKTOP_ID "antrenamer-qt" CACHE STRING
     "Desktop file and icon identifier")
 
-option(ANTREN_INSTALL_DESKTOP_ID
-    "Use a custom desktop file and icon name"
-    "antrenamer-qt"
-)
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
