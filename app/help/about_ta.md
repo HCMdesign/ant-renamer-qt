@@ -2,11 +2,11 @@
 
 ---
 
-This program has been made by Antoine Potten with Borland Delphi 7.
+The original program, Ant Renamer, was created by Antoine Potten with Borland Delphi 7. Its code is free software.
 
-Ant Renamer Qt, the C++/Qt 6 port of this program (version 3.x, for Windows 10 and 11 and for Linux), is developed in parallel with the original by Frédéric Biron.
+Ant Renamer Qt, a C++/Qt 6 port based on this free code (version 3.x, for Windows 10 and 11 and for Linux), is developed in parallel with the original by Frédéric Biron.
 
-At first, I made this program because the only file renamers that I found were shareware (at that time).
+This port started from a display problem: on Windows 11, with the option "Beta: Use Unicode UTF-8 for worldwide language support" turned on, diamond characters appeared in the interface of the original program.
 
 ---
 
@@ -22,32 +22,26 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 - Ant Renamer Qt support by e-mail (no GitHub account needed) : [ant-renamer-qt@morfredus.fr](mailto:ant-renamer-qt@morfredus.fr)
 - Web page of the original Ant Renamer : [www.antp.be/software/renamer](https://www.antp.be/software/renamer)
 
-## Links
+## Components and tools
 
-Icons used for toolbar themes:
+Toolbar icons: the "Scrows" set (glyph collection by Virtual Plastic) and the "Windows XP" sets come from the original program; the "Modern" set is drawn by Ant Renamer Qt itself.
 
-- Default toolbar: [Scrows](http://www.virtualplastic.org/scrow/)' glyphs collections
-- Windows XP toolbars: the icon sets of the original program
-
-Components used by Ant Renamer Qt:
+Used by Ant Renamer Qt, to build it and to publish it:
 
 - [Qt 6](https://www.qt.io/) (interface, regular expressions, XML)
-- [InnoSetup](https://www.jrsoftware.org/), used for the installation procedure on Windows
-
-Components used by the original program (Delphi), whose ideas and code the port builds on:
-
-- Some components from the [JVCL](https://wiki.delphi-jedi.org/wiki/JEDI_Visual_Component_Library)
-- [CorelButton](https://www.theill.com/)
-- [Toolbar2000](https://jrsoftware.org/tb2k.php) & TBX
-- [VirtualTreeview](https://www.jam-software.com/virtual-treeview)
-- [Tnt Unicode Controls](https://www.tntware.com/delphicontrols/unicode/)
-- dEXIF
-- [TRegExpr library](https://regex.sorokin.engineer/)
+- [GCC](https://gcc.gnu.org/) and [MSYS2](https://www.msys2.org/) (UCRT64 environment: compiler and Qt for the Windows files)
+- [CMake](https://cmake.org/) and [Ninja](https://ninja-build.org/) (build)
+- [Inno Setup](https://www.jrsoftware.org/) (installation procedure on Windows)
+- [linuxdeploy](https://github.com/linuxdeploy/linuxdeploy) (AppImage)
+- [Flatpak](https://flatpak.org/) and the [KDE](https://kde.org/) Platform runtime (Flatpak package)
+- [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) (static analysis)
+- [GitHub Actions](https://github.com/features/actions) (builds, tests and packages on every change)
+- [GnuPG](https://gnupg.org/) (signature of the Linux packages)
 
 ## Thanks to
 
-- Sebastien Buysse, Gregory Zicot and Michel Potten
-- ... And to all the people that sent me suggestion and comments, and of course those that use the program.
+- Antoine Potten, author of the original program
+- 大眼仔~旭, for the update of the Chinese (Simplified) translation
 
 ## Translations
 

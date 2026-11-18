@@ -293,6 +293,7 @@ If m or mm immediately follows h or hh, minute rather than month is used]]>
       <Item Name="straeFromListEmpty" Value="Empty line"/>
       <Item Name="straeFromListEnd" Value="End of list"/>
 <n/>      <Item Name="straeExifNoInfo" Value="No EXIF info found"/>
+      <Item Name="straeNoUsableTag" Value="No usable tag: the new name would be empty"/>
       <Item Name="straeDateTimeNoDate" Value="Could not get file date"/>
       <Item Name="strfsNotRenamed" Value="%s was not renamed : %s"/>
       <Item Name="strfsRenamed" Value="%s renamed to %s"/>
@@ -498,6 +499,9 @@ If m or mm immediately follows h or hh, minute rather than month is used]]>
     <Item Name="port" Value="Port:"/>
     <Item Name="cQtPortAnd" Value="C++/Qt 6 port and Linux port: "/>
     <Item Name="components" Value="Components:"/>
+    <Item Name="icons" Value="Icons:"/>
+    <Item Name="thanksAuthorOriginal" Value="author of the original program"/>
+    <Item Name="thanksChineseUpdate" Value="update of the Chinese (Simplified) translation"/>
     <Item Name="translations" Value="Translations:"/>
     <Item Name="thanksTo" Value="Thanks to:"/>
     <Item Name="andAllThePeople" Value="...and all the people that sent me suggestions and comments"/>
@@ -545,6 +549,7 @@ If m or mm immediately follows h or hh, minute rather than month is used]]>
     <Item Name="exportPreviewTxt" Value="Text file, new names only (*.txt)"/>
     <Item Name="typeFolderPath" Value="Or type the path of a folder"/>
     <Item Name="webSiteQt" Value="Ant Renamer Qt web site: "/>
+    <Item Name="onlineHelp" Value="Online help: "/>
     <Item Name="webSiteOriginal" Value="Web site of the original program (Antoine Potten): "/>
     <Item Name="batchFilterXml" Value="Ant Renamer batch files (*.arb *.xml)"/>
     <Item Name="batchFilter" Value="Ant Renamer batch files (*.arb)"/>
@@ -552,7 +557,7 @@ If m or mm immediately follows h or hh, minute rather than month is used]]>
     <Item Name="couldNotWriteFile" Value="Could not write %1"/>
     <Item Name="invalidRegexp" Value="Invalid regular expression: %1"/>
     <Item Name="logReverted" Value="Reverted"/>
-    <Item Name="helpNotFound" Value="The help files were not found in:&#10;%1&#10;&#10;Open the program's web site instead?"/>
+    <Item Name="helpNotFound" Value="The help files were not found in:&#10;%1&#10;&#10;Open the online help instead?"/>
     <Item Name="newNameInvalidChar" Value="the new name contains an invalid character"/>
     <Item Name="renameSummary" Value="Files renamed: %1, errors: %2"/>
     <Item Name="pasteFolder" Value="Paste from clipboard"/>

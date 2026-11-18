@@ -134,6 +134,8 @@ The option "Same number for files with the same name..." gives the same number t
 
 ## Use mp3 tag info {#mp3}
 
+The complete list of the tags, with where they come from, is [on this dedicated page](mp3_tags_en.md).
+
 Here again you have to enter a mask. The tags are read from the ID3 information of the file: ID3v2 (2.2, 2.3 and 2.4) at the beginning of the file and ID3v1 / v1.1 at its end. When both exist, the v2 values are used, and v1 fills what v2 does not have. See the ["Formatting"](format_en.md) page for more information.
 
 - `%author%` : Author/Artist
@@ -186,7 +188,7 @@ The "c", "ddddd" and "dddddd" tags of the original program (date in the format o
 
 Be careful with date and time formats: the "/" and ":" cannot be used in a filename. So if you want delimiters between the numbers, insert them between quotes, as explained in next paragraphs.
 
-Here all the characters that are not part of the mask should be put inside quotes (single or double). I recommend to use double quotes (quotation marks "...") instead of single (apostrophes '...') so you can put apostrophes inside the quotes. One exception: the letters "f" (file name) and "e" (extension) are replaced even between single quotes, so text that contains an "f" or an "e" must be put between double quotes.
+Here all the characters that are not part of the mask should be put inside quotes (single or double). It is recommended to use double quotes (quotation marks "...") instead of single (apostrophes '...') so you can put apostrophes inside the quotes. One exception: the letters "f" (file name) and "e" (extension) are replaced even between single quotes, so text that contains an "f" or an "e" must be put between double quotes.
 
 Here are a few valid examples:
 
@@ -277,6 +279,8 @@ A file that contains no EXIF, IPTC or XMP information is not renamed: the log sa
 The XMP sidecar file of a picture (`IMG.xmp` or `IMG.CR2.xmp`) is read with the picture and wins over the XMP embedded in it, which is how the keywords and the rating of a RAW file become available. When the picture is renamed, its sidecar files (`.xmp`, `.dop`, `.pp3`... and, for a JPEG, its RAW file) are renamed with it: see the option in [Options](options_en.md), *Processing*.
 
 ## Use EPUB info {#epub}
+
+The complete list of the tags, with where they come from, is [on this dedicated page](epub_tags_en.md).
 
 For e-books in the EPUB format. As in the [mp3](#mp3) action you enter a mask, and the tags are read from the metadata stored inside the EPUB file (an EPUB is a ZIP archive whose OPF file holds the title, the authors, the date...). See the ["Formatting"](format_en.md) page for more information, including the `$if` function.
 

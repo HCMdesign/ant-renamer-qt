@@ -289,6 +289,7 @@ Si m ou mm suit h ou hh, il est interprété comme minutes plutôt que mois]]>
       <Item Name="straeFromListEmpty" Value="Ligne vide"/>
       <Item Name="straeFromListEnd" Value="Fin de la liste"/>
       <Item Name="straeExifNoInfo" Value="Pas d'info EXIF trouvée"/>
+      <Item Name="straeNoUsableTag" Value="Aucune info utilisable : le nouveau nom serait vide"/>
       <Item Name="straeDateTimeNoDate" Value="Impossible d'obtenir la date du fichier"/>
       <Item Name="strfsNotRenamed" Value="%s n'a pas été renommé : %s"/>
       <Item Name="strfsRenamed" Value="%s renommé en %s"/>
@@ -494,6 +495,9 @@ Si m ou mm suit h ou hh, il est interprété comme minutes plutôt que mois]]>
     <Item Name="port" Value="Portage :"/>
     <Item Name="cQtPortAnd" Value="Portage C++/Qt 6 et portage Linux : "/>
     <Item Name="components" Value="Composants :"/>
+    <Item Name="icons" Value="Icônes :"/>
+    <Item Name="thanksAuthorOriginal" Value="auteur du programme d'origine"/>
+    <Item Name="thanksChineseUpdate" Value="mise à jour de la traduction en chinois simplifié"/>
     <Item Name="translations" Value="Traductions :"/>
     <Item Name="thanksTo" Value="Remerciements :"/>
     <Item Name="andAllThePeople" Value="...et toutes les personnes qui m'ont envoyé des suggestions et des commentaires"/>
@@ -541,6 +545,7 @@ Si m ou mm suit h ou hh, il est interprété comme minutes plutôt que mois]]>
     <Item Name="exportPreviewTxt" Value="Fichier texte, nouveaux noms seulement (*.txt)"/>
     <Item Name="typeFolderPath" Value="Ou saisir le chemin d'un dossier"/>
     <Item Name="webSiteQt" Value="Site web d'Ant Renamer Qt : "/>
+    <Item Name="onlineHelp" Value="Aide en ligne : "/>
     <Item Name="webSiteOriginal" Value="Site web du programme d'origine (Antoine Potten) : "/>
     <Item Name="batchFilterXml" Value="Fichiers job Ant Renamer (*.arb *.xml)"/>
     <Item Name="batchFilter" Value="Fichiers job Ant Renamer (*.arb)"/>
@@ -548,7 +553,7 @@ Si m ou mm suit h ou hh, il est interprété comme minutes plutôt que mois]]>
     <Item Name="couldNotWriteFile" Value="Impossible d'écrire %1"/>
     <Item Name="invalidRegexp" Value="Expression régulière non valide : %1"/>
     <Item Name="logReverted" Value="Rétabli"/>
-    <Item Name="helpNotFound" Value="Les fichiers d'aide sont introuvables dans :&#10;%1&#10;&#10;Ouvrir plutôt le site web du programme ?"/>
+    <Item Name="helpNotFound" Value="Les fichiers d'aide sont introuvables dans :&#10;%1&#10;&#10;Ouvrir plutôt l'aide en ligne ?"/>
     <Item Name="newNameInvalidChar" Value="le nouveau nom contient un caractère non valide"/>
     <Item Name="renameSummary" Value="Fichiers renommés : %1, erreurs : %2"/>
     <Item Name="pasteFolder" Value="Coller depuis le presse-papiers"/>

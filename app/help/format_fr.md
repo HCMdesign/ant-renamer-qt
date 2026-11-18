@@ -18,8 +18,8 @@ Par exemple, l'opération d'[Infos des tags mp3](actions_fr.md#mp3) supporte des
 | `%count%` et dérivés | Nombre d'éléments d'un dossier, voir [plus bas](#count) | toutes (dossiers renommés) |
 | `%%` | Un caractère "%" | toutes |
 | `%num%` | Le compteur | Énumération, EXIF |
-| `%author%`, `%title%`, `%album%`, `%year%`, `%genre%`, `%comm%`, `%track%` | Tags ID3 | mp3 |
-| `%author%`, `%title%`, `%year%`, `%publisher%`, `%lang%`, `%isbn%`, `%series%`, `%seriesnum%` | Métadonnées EPUB | EPUB |
+| `%author%`, `%title%`, `%album%`, `%year%`, `%genre%`, `%comm%`, `%track%` | Tags ID3, voir [la liste](mp3_tags_fr.md) | mp3 |
+| `%author%`, `%title%`, `%year%`, `%publisher%`, `%lang%`, `%isbn%`, `%series%`, `%seriesnum%` | Métadonnées EPUB, voir [la liste](epub_tags_fr.md) | EPUB |
 | `%random%` | La partie aléatoire | Noms aléatoires |
 | `%DateTimeOriginal%`, `%Make%`, `%IptcKeywords%`, `%XmpTitle%`... | Données EXIF, IPTC et XMP, voir [la liste](metadata_tags_fr.md) | EXIF |
 | `$if(...)` | Texte conditionnel, voir [plus bas](#if) | mp3, EXIF, EPUB |
@@ -28,7 +28,7 @@ Les tags doivent être écrits exactement comme dans le tableau (en minuscules :
 
 ## Le tag folder {#folder}
 
-Un tag %folderN% est souvent disponible. Ce tag vous permet d'utiliser le nom des dossiers parents dans le nom de fichier lui-même. C'est un peu compliqué à expliquer, je vais donc vous donner quelques exemples.
+Un tag %folderN% est souvent disponible. Ce tag vous permet d'utiliser le nom des dossiers parents dans le nom de fichier lui-même. C'est un peu compliqué à expliquer, voici donc quelques exemples.
 
 Si vous avez un fichier dans "c:\\data\\images\\movies\\poster.jpg" et que vous utilisez l'opération [Insertion de chaîne](actions_fr.md#stringinsert) :
 

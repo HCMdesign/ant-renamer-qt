@@ -209,11 +209,14 @@ void showHelp(const QString& topic, QWidget* parent) {
         // Say exactly where the program looked: installation problems are then obvious.
         const QMessageBox::StandardButton b = QMessageBox::warning(
             parent, QApplication::applicationName(),
-            QApplication::translate("Ren", "The help files were not found in:\n%1\n\nOpen the program's web site instead?")
+            QApplication::translate("Ren", "The help files were not found in:\n%1\n\nOpen the online help instead?")
                 .arg(QDir::toNativeSeparators(dir)),
             QMessageBox::Yes | QMessageBox::No);
         if (b == QMessageBox::Yes) {
-            QDesktopServices::openUrl(QUrl(u"https://www.antp.be/software/renamer/"_s));
+            // the online help of the port (not the web site of the original program): French for the French help, English otherwise
+            QDesktopServices::openUrl(
+                QUrl(lang == u"fr" ? u"https://morfredus.fr/ant-renamer-qt/aide/"_s
+                                   : u"https://morfredus.fr/ant-renamer-qt-en/help/"_s));
         }
         return;
     }
