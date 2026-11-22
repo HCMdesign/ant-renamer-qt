@@ -365,14 +365,14 @@ FilterDialog::FilterDialog(QWidget* parent, const ren::FileFilter& previous, boo
         ui_->timeFrom->setTime(previous.timeFrom.value_or(QTime(0, 0)));
         ui_->timeTo->setTime(previous.timeTo ? previous.timeTo->addMSecs(-999) : QTime(23, 59, 59));
     }
-    auto showSize = [](const std::optional<qint64>& v, QCheckBox* use, QSpinBox* spin, QComboBox* unit) {
-        if (!v) {
+    auto showSize = [](const std::optional<qint64>& size, QCheckBox* use, QSpinBox* spin, QComboBox* unit) {
+        if (!size) {
             return;
         }
         use->setChecked(true);
-        const int u = (*v % (1ll << 30) == 0) ? 2 : (*v % (1ll << 20) == 0) ? 1 : 0;  // the biggest unit that is exact
+        const int u = (*size % (1ll << 30) == 0) ? 2 : (*size % (1ll << 20) == 0) ? 1 : 0;  // the biggest unit that is exact
         unit->setCurrentIndex(u);
-        spin->setValue(int(qMax<qint64>(*v >> (10 * (u + 1)), 0)));
+        spin->setValue(int(qMax<qint64>(*size >> (10 * (u + 1)), 0)));
     };
     showSize(previous.minSize, ui_->useMin, ui_->minSize, ui_->minUnit);
     showSize(previous.maxSize, ui_->useMax, ui_->maxSize, ui_->maxUnit);
