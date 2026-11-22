@@ -2,6 +2,9 @@
 
 Ant Renamer Qt, versions 3.x (portage C++/Qt 6 par Frédéric Biron, développé en parallèle de l'original) :
 
+- 3.3.0-beta.1 (22/11/2026)
+  - Nouveau : Filtrer les fichiers (bouton de la barre d'outils et F4, menu du clic droit) : garde ou retire les fichiers de la liste qui correspondent à une période, une heure de la journée et une taille, sur la date de modification, de création ou de prise de vue EXIF ; le filtre peut être corrigé et effacé, et le nombre de fichiers masqués est affiché tant qu'il est actif.
+  - Correction : l'annulation d'une passe faite avec « Copier au lieu de renommer » supprime les copies qui n'ont pas été modifiées. Correction : un lancement silencieux (-q) et une fenêtre ouverte ne s'effacent plus l'historique d'annulation l'un de l'autre.
 - 3.2.0 (20/11/2026)
   - Version finale de la 3.2.0 : le code de la 3.2.0-beta.3 (opération « Infos EPUB », noms qui n'ont pas l'air vides évités, menu de l'Explorateur qui demande quoi ajouter, fichiers laissés tels quels en orange, aide et crédits nettoyés).
 - 3.2.0-beta.3 (18/11/2026)

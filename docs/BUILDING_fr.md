@@ -20,7 +20,7 @@ Rien d'autre : aucune bibliothèque tierce.
 - Le **moteur** (`core/`) est une bibliothèque statique, `rencore`, qui ne dépend que de QtCore.
 - L'**application** (`app/`) est l'exécutable `antrenamer-qt` (Qt Widgets et Network). Il utilise `rencore`.
 - Les avertissements du compilateur (`-Wall -Wextra -Wshadow`) sont activés pour GCC et Clang ; le code compile sans aucun. La CI compile avec `-DANTREN_WERROR=ON` (un avertissement fait échouer la compilation) et lance clang-tidy (`.clang-tidy`). Pour le lancer vous-même : configurez avec `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`, puis `clang-tidy -p <dossier de compilation> core/*.cpp app/*.cpp` (sous Windows : `pacman -S mingw-w64-ucrt-x86_64-clang-tools-extra` dans MSYS2).
-- Deux programmes de test : `test_core` (moteur seul) et `test_panel` (l'éditeur d'actions, sans fenêtre).
+- Trois programmes de test : `test_core` (moteur seul), `test_panel` (l'éditeur d'actions, sans fenêtre) et `test_filter_dialog` (la boîte Filtrer les fichiers).
 - La version vient du fichier `VERSION` à la racine, source unique : CMake la lit et la passe au programme.
 - `CMakePresets.json` contient les réglages par plateforme : une compilation, c'est toujours `cmake --preset <nom>` puis `cmake --build --preset <nom>`.
 
@@ -53,7 +53,7 @@ ctest --test-dir build-mingw --output-on-failure
 
 Sous Windows, `scripts\windows\vscode-mingw.ps1 build` (ou `configure`, `run`, `clean`) retrouve MSYS2 tout seul et lance les mêmes commandes ; c'est ce qu'utilisent les tâches VS Code. Le preset `mingw` prend la variable d'environnement `QT_ROOT` comme emplacement de Qt quand elle est définie ; dans un shell MSYS2, Qt est trouvé de toute façon.
 
-Les tests n'ont pas besoin d'écran : `test_panel` règle lui-même `QT_QPA_PLATFORM=offscreen`.
+Les tests n'ont pas besoin d'écran : `test_panel` et `test_filter_dialog` règlent eux-mêmes `QT_QPA_PLATFORM=offscreen` (pas sous Windows, où le greffon `windows` déployé est le seul et rien n'est affiché).
 
 Ne partagez pas un dossier de build entre deux systèmes (par exemple configuré depuis WSL puis utilisé sous Windows) : le cache CMake garde le chemin des sources. `vscode-mingw.ps1` supprime un dossier de build dont le cache pointe vers un autre chemin.
 

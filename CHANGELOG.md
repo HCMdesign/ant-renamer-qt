@@ -8,11 +8,31 @@ C++/Qt 6 port and Linux port: Frédéric Biron ([morfredus](https://github.com/m
 
 ## [Unreleased]
 
+## [3.3.0-beta.1] - 2026-11-22
+
+Pre-release of 3.3.0, first of the cycle (there is no 3.2.1: its corrections are in 3.3.0). A way to filter the files of the list by date, time of the day and size, an undo that deletes the copies it made, and an undo history that survives a silent run beside an open window.
+
+### Added
+
+- Filter files (a funnel button in the files toolbar, shortcut F4, and the right-click menu of the list): keeps, or removes, the files that match a period (from / to), a time of the day (from / to, across midnight too) and a size (at least / at most), all the ticked criteria together, on the modification date, the creation date or the EXIF shooting date (else the modification date). A size limit does not concern folders, a file without a creation date never matches. The files are only taken out of the list.
+  - Correcting and clearing: the dialog shows the last criteria again and, when the last filter took files out, offers (ticked) to put them back first, each one right after the kept file that was before it (at the end if that file is gone); a "Clear the filter" button, or no criterion ticked with the put-back choice ticked, gives every file back. "Remove all" forgets the files a filter took out. With no file and nothing to put back, a message asks to add files.
+  - While a filter hides files it is shown: the file count at the bottom turns orange and says how many are hidden ("12 files, 340 hidden by the filter"), and the Filter button stays pressed with a tooltip that says how to correct or clear the filter.
+  - Code: `ren::FileFilter` in `core/ren_files.*`, `FilterDialog` in `app/dialogs.*`, `MainWindow::filterFiles()`, `insertFileAt()`, `showFilterState()`; icon `TbFilter` drawn in code. Twenty-one new language keys (`filter*`, English and French; the other languages show English). Tests: `tests/filter_check.h` (the engine) and `test_filter_dialog` (the dialog: it segfaulted while the first version kept an `std::initializer_list` whose array was gone in a lambda; fixed before this release). Help (files page and shortcuts, EN, FR, HR, TA), USER_GUIDE and WHATS_NEW (EN, FR). The same filters on the command line are planned for 3.4.
+
+### Fixed
+
+- History and `-q`: a silent run (`-q`) while the window is open no longer erases the passes of the other, and the window no longer erases the passes of the `-q` run. Before writing the history file (under a lock file, `<history>.lock`), before undoing and when the window is activated again, the window takes in the passes it has never seen (`Journal::mergeFromJson`, placed by date); a pass undone or forgotten in the window is not brought back. Test in `test_core`.
+- Undo and "Copy instead of rename": the copy is now recorded in the history (`Move::copy`, key `copy` in the history file; older files load as before). Undoing the pass deletes the copy if it is unchanged (same size and date as right after the copy), and puts the list entry back on the original; a copy changed since is kept, with the message "The file was changed after the renaming", and the pass stays. The original is never touched. New keys `undoCopyDeleted` and `undoCopyNotDeleted` (English, French; the other languages show English), test in `test_core`, USER_GUIDE (EN, FR).
+
 ### Changed
 
-- Flatpak manifests (`packaging/flatpak/fr.morfredus.AntRenamerQt.yaml` and `.local.yaml`): build with `buildsystem: cmake-ninja` (`RelWithDebInfo`) instead of hand-written CMake commands, as asked by the Flathub reviewers; the local manifest now builds like Flathub does. Build directories `build-arm64-cross` and `build-mingw` are skipped.
-- AppStream file (`packaging/flatpak/fr.morfredus.AntRenamerQt.metainfo.xml.in`): release 3.2.0 (2026-11-20) listed; it was missing, so Flathub would have shown 3.1.1 as the latest version.
+- `VERSION`, history pages (EN, FR, HR, TA), `WHATS_NEW` (EN, FR), `USER_GUIDE` (EN, FR), the shortcut tables (F4): 3.3.0-beta.1. Release notes `docs/release-notes/3.3.0-beta.1.md` (EN, FR). `BUILDING` and `ARCHITECTURE` (EN, FR): the new test and the new parts of the engine and the application. `docs/TESTED_PLATFORMS.md` (EN, FR): what was tried by hand.
+- TODO (EN, FR): updated to 2026-11-22 and reorganised by priority (functional problems, then forum requests, then the rest), the roadmap said to be not frozen, numbered pre-releases between the first and the final version. The 3.2.1 plan is folded into 3.3 (corrections, file dates, filters); the dates of the files are limited to bringing the modification date back in line with the EXIF shooting date, written as a deliberate choice with safeguards against the falsification of photo originals; the tag to place the number of duplicate names, and the numbering of duplicates in every action, are set aside; choosing the files moves to 3.4 and the later versions shift by one.
+- `WHATS_NEW` (EN, FR): a line in the 3.2.0 section says that the application is on Flathub (the package is built from the 3.2.0 sources).
+- Flatpak manifests (`packaging/flatpak/fr.morfredus.AntRenamerQt.yaml` and `.local.yaml`): build with `buildsystem: cmake-ninja` (`RelWithDebInfo`) instead of hand-written CMake commands, as asked by the Flathub reviewers; the local manifest builds like Flathub does.
+- AppStream file (`packaging/flatpak/fr.morfredus.AntRenamerQt.metainfo.xml.in`): release 3.2.0 (2026-11-20) listed; it was missing, so Flathub would have shown 3.1.1 as the latest version. Pre-releases are not listed there: the line of 3.3.0 goes in before its tag.
 - CI (`.github/workflows/build.yml`): no build on a push to `main` any more. A release made three runs for the same commit (pull request, push to `main`, tag); it now makes two (pull request, tag). `workflow_dispatch` is kept to build by hand. `docs/BUILDING.md` and `BUILDING_fr.md` say so.
+- Developer aid `ANTREN_MISSING=1` also builds the Filter files dialog.
 
 ## [3.2.0] - 2026-11-20
 

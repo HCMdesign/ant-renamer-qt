@@ -4,13 +4,22 @@
 Pour le détail technique : [CHANGELOG](../CHANGELOG.md). Pour le chemin parcouru depuis le programme d'origine (ce qui est
 conservé, les différences voulues, ce qui a été ajouté) : [PRESENTATION_fr.md](PRESENTATION_fr.md).
 
-Version courante : **3.2.0**.
+Version courante : **3.3.0-beta.1**.
+
+## 3.3.0-beta.1
+
+| Nouveauté | Depuis |
+|---|---|
+| **Filtrer les fichiers** : le bouton entonnoir de la barre d'outils (F4) ou clic droit dans la liste, « Filtrer les fichiers... », garde (ou retire) les fichiers qui correspondent à une période, une heure de la journée (« tout ce qui a été pris entre 14 h et 15 h ») et une taille, sur la date de modification, la date de création ou la date de prise de vue EXIF. Rien n'est touché sur le disque, et le filtre peut être corrigé : les derniers critères sont affichés de nouveau et les fichiers qu'il avait retirés peuvent être remis d'abord, ou tous rendus avec « Effacer le filtre », chacun à sa place. Tant qu'un filtre masque des fichiers, le nombre de fichiers passe en orange (« 12 fichiers, 340 masqués par le filtre ») et le bouton reste enfoncé. | 3.3.0-beta.1 |
+| **L'annulation supprime les copies** faites avec « Copier au lieu de renommer », si elles n'ont pas été modifiées depuis. | 3.3.0-beta.1 |
+| **Ligne de commande silencieuse et fenêtre ouverte** : un lancement `-q` et une fenêtre laissée ouverte ne s'effacent plus l'historique d'annulation l'un de l'autre. | 3.3.0-beta.1 |
 
 ## 3.2.0
 
 | Nouveauté | Depuis |
 |---|---|
 | **Version finale** : le code de la 3.2.0-beta.3, avec tout ce que les bêtas de la 3.2.0 ont apporté (opération « Infos EPUB », plus de noms qui ont l'air vides, menu de l'Explorateur qui demande quoi ajouter, fichiers laissés tels quels en orange, aide et crédits nettoyés). | 3.2.0 |
+| **Sur Flathub** : Ant Renamer Qt s'installe depuis Flathub sous Linux (x86-64 et arm64) : `flatpak install flathub fr.morfredus.AntRenamerQt`. Le paquet est construit à partir des sources de la 3.2.0 ; le programme n'y a pas d'accès réseau, la recherche de nouvelle version y est donc masquée. | 3.2.0 |
 
 ## 3.2.0-beta.3
 

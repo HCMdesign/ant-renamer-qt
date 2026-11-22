@@ -1,6 +1,6 @@
 # Ant Renamer Qt : guide des fonctions
 
-*Toutes les fonctions d'Ant Renamer Qt 3.2.0, avec le mode d'emploi.*
+*Toutes les fonctions d'Ant Renamer Qt 3.3.0-beta.1, avec le mode d'emploi.*
 English version : [USER_GUIDE.md](USER_GUIDE.md). Recettes (cas d'usage pas à pas) : [USER_RECIPES_fr.md](USER_RECIPES_fr.md). Détails complets, page par page, avec captures d'écran : l'aide intégrée (F1). Différences entre Windows et Linux : §13.
 
 ## 1. Principe général
@@ -23,6 +23,7 @@ Le programme ne modifie que les **noms** (ou copie les fichiers sous un nouveau 
 | Maj+F1 | À propos | Échap | Arrêter |
 | F2 | Ajouter des fichiers | F10 | Options |
 | F3 | Ajouter des dossiers | F11 | Avant-plan |
+| F4 | Filtrer les fichiers | | |
 | F5 | Actualiser l'aperçu | F12 | Annuler |
 | Maj+F12 | Historique | | |
 | F6 / F7 / F8 | Retirer sélectionnés / tous / manquants | Alt+F4 | Quitter |
@@ -46,6 +47,7 @@ Le programme ne modifie que les **noms** (ou copie les fichiers sous un nouveau 
 | Retirer sélec. (F6) | retire de la liste les fichiers sélectionnés (pas du disque) |
 | Retirer tout (F7) | vide la liste |
 | Retirer manquants (F8) | retire les fichiers qui n'existent plus sur le disque |
+| Filtrer les fichiers (F4) | garde ou retire les fichiers qui correspondent à une date, une heure de la journée et une taille |
 | Aperçu (F5) | remplit la colonne Aperçu (pas automatique, pour la performance). Il utilise le job, ou l'opération affichée si le job est vide |
 | Seulement modifiés | masque les fichiers dont le nom ne change pas dans l'aperçu (simple filtre d'affichage : ils sont quand même renommés, et un fichier masqué n'est jamais touché par « Retirer sélec. » ni par les boutons de déplacement) ; actualisez l'aperçu d'abord |
 | Fichiers cachés | affiche les fichiers cachés et système de la liste ; désactivé par défaut : ils sont masqués et ignorés par toutes les opérations (pas renommés). Un avertissement s'affiche avant un renommage quand il est activé et que la liste en contient |
@@ -53,7 +55,8 @@ Le programme ne modifie que les **noms** (ou copie les fichiers sous un nouveau 
 
 - **Colonnes** : clic droit sur l'en-tête pour afficher Dossier, Nom de fichier, Chemin complet, Ext., Aperçu, Taille, Date de création, Date de modification. Elles se redimensionnent et se déplacent ; une colonne au moins reste visible.
 - **Tri** : clic sur un en-tête (à nouveau pour inverser). Par défaut le tri est naturel : « fichier 2 » avant « fichier 10 » (Options > Fichiers & Dossiers redonne l'ordre alphabétique). **Trier réordonne vraiment la liste, donc fixe l'ordre de traitement**, et donc l'ordre de numérotation d'une énumération. Clic droit > *Non trié* retire l'indicateur de tri.
-- Clic droit dans la liste : retirer la sélection / tout, tout sélectionner, ne rien sélectionner, inverser la sélection, actualiser l'aperçu, **Exporter l'aperçu...**.
+- Clic droit dans la liste : retirer la sélection / tout, tout sélectionner, ne rien sélectionner, inverser la sélection, actualiser l'aperçu, **Filtrer les fichiers...**, **Exporter l'aperçu...**.
+- **Filtrer les fichiers...** (le bouton entonnoir de la barre d'outils, F4, et le menu du clic droit) garde (ou retire) les fichiers de la liste qui correspondent à une date, une heure de la journée et une taille, tous les critères cochés ensemble. La date est la date de modification, la date de création (que tous les systèmes de fichiers Linux ne gardent pas : un tel fichier ne correspond jamais) ou la date de prise de vue (EXIF, sinon la date de modification). « Du » et « Au » donnent une période ; « Heure de la journée » garde par exemple tout ce qui a été pris entre 14 h et 15 h quel que soit le jour (de 22 h à 2 h marche à cheval sur minuit) ; les limites de taille concernent les fichiers (un dossier est jugé sur ses dates). Les fichiers sont seulement retirés de la liste, rien n'est touché sur le disque. Appuyez de nouveau sur le bouton pour corriger le filtre : les derniers critères sont affichés et les fichiers qu'il avait retirés peuvent être remis d'abord (chacun après le fichier qui le précédait) ; tant qu'un filtre masque des fichiers, le nombre en bas passe en orange et le bouton reste enfoncé ; « Effacer le filtre » les rend tous.
 - **Exporter l'aperçu...** écrit les fichiers affichés (les filtres « Seulement modifiés » et « Fichiers cachés » s'appliquent) dans un fichier CSV (colonnes Dossier, Nom, Nouveau nom ; point-virgule, chaque champ entre guillemets, UTF-8 avec BOM pour qu'Excel et LibreOffice lisent les accents) ou dans un fichier texte avec les seuls nouveaux noms, un par ligne. Un fichier sans aperçu garde son nom actuel : actualisez d'abord l'aperçu. Utile pour relire un gros lot ou en garder une trace.
 - Double-clic sur un fichier : l'ouvre avec son programme associé, si « Exécuter le fichier lors d'un double clic » est coché (Options > Fichiers & Dossiers).
 - Des dossiers peuvent aussi être dans la liste : ils sont renommés comme les fichiers (dans l'ordre de la liste) ; les fichiers de la liste qui se trouvent dans un dossier renommé le suivent.
@@ -206,6 +209,6 @@ Même moteur, autre présentation, choisie dans Options > Affichage. C'est celle
 
 - EXIF : 36 tags seulement, MakerNote non décodée ; IPTC lu seulement dans les JPEG.
 - Tags audio : ID3 seulement (MP3) ; FLAC, OGG, M4A ne sont pas lus.
-- Annuler : passe après passe (les 50 dernières, gardées à la fermeture du programme), dans une session uniquement à partir de sa dernière passe ; les fichiers copiés avec « Copier au lieu de renommer » ne sont pas supprimés.
+- Annuler : passe après passe (les 50 dernières, gardées à la fermeture du programme), dans une session uniquement à partir de sa dernière passe ; les copies faites avec « Copier au lieu de renommer » sont supprimées par l'annulation si elles n'ont pas été modifiées depuis (les originaux ne sont jamais touchés).
 - Le menu contextuel court de Windows 11 n'est pas pris en charge (utiliser « Afficher plus d'options »).
 - L'aide en croate et en tamoul affiche l'anglais pour les pages écrites pour Ant Renamer Qt.

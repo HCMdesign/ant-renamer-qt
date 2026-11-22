@@ -24,6 +24,7 @@ void runDeveloperAids(MainWindow& w, QApplication& app) {
         AboutDialog d2(&w);
         DragDropDialog d3(&w);
         AddFoldersDialog d4({}, &w);
+        FilterDialog d5(&w, {}, true, 3);  // with the put-back choice and the Clear button
     }
     // Developer aid: ANTREN_SHOT=out.png renders the window (optionally switching to ANTREN_TAB) and exits.
     if (const QByteArray shot = qgetenv("ANTREN_SHOT"); !shot.isEmpty()) {

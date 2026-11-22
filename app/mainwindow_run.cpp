@@ -1,5 +1,7 @@
 #include "mainwindow_internal.h"
 
+#include <QLockFile>
+
 // MainWindow: running the batch (worker thread, progress, undo), the log and the command line.
 
 // --- running ---
@@ -51,6 +53,9 @@ void MainWindow::run(Op op, int undoCount, int undoSession) {
     if (worker_) {
         QMessageBox::information(this, windowTitle(), tr_("Application is busy: Renaming operation in progress."));
         return;
+    }
+    if (op == Op::Undo) {
+        refreshHistory();
     }
     if (op == Op::Undo ? journal_.size() == 0
                        : (files_.size() == 0 || (batch_.size() == 0 && panel_->currentIndex() < 0 && op != Op::Revert))) {
@@ -266,7 +271,7 @@ void MainWindow::quitSilently(int code) {
 // the actions makes that visible and stops their shortcuts.
 void MainWindow::setBusy(bool busy) {
     for (QAction* a :
-         {aOptions_, aAddFiles_, aAddFolders_, aRemoveSel_, aRemoveAll_, aRemoveDead_, aPreview_, aChangedOnly_, aShowHidden_,
+         {aOptions_, aAddFiles_, aAddFolders_, aRemoveSel_, aRemoveAll_, aRemoveDead_, aFilter_, aPreview_, aChangedOnly_, aShowHidden_,
           aBatchAdd_, aBatchRemoveSel_, aBatchClear_, aBatchOpen_, aBatchSave_, aUp_, aDown_, aTop_, aBottom_, aUnsort_}) {
         a->setEnabled(!busy);
     }
@@ -279,9 +284,23 @@ void MainWindow::updateUndoState() {
     setBusy(worker_ != nullptr);
 }
 
+// A `-q` run (no window, no instance lock) can write the history file while this window is open. Its passes are merged in
+// before this window writes the file or undoes something, so neither run loses the passes of the other.
+void MainWindow::refreshHistory() {
+    if (QFile f(historyFile()); f.open(QIODevice::ReadOnly) && journal_.mergeFromJson(f.readAll()) > 0) {
+        updateUndoState();
+    }
+}
+
 // The history is written after every run, so it survives a crash. A failure is silent.
 void MainWindow::saveHistory() {
     const QString path = historyFile();
+    QLockFile lock(path + u".lock"_s);  // two runs writing at once: read, merge and write as one step
+    lock.setStaleLockTime(15000);
+    lock.tryLock(3000);
+    if (QFile f(path); f.open(QIODevice::ReadOnly)) {
+        journal_.mergeFromJson(f.readAll());
+    }
     if (journal_.size() == 0) {
         QFile::remove(path);
     } else if (QSaveFile f(path); f.open(QIODevice::WriteOnly)) {
@@ -292,6 +311,7 @@ void MainWindow::saveHistory() {
 
 // The passes of the history, newest first. Undo goes back linearly: choosing a pass undoes it and every pass after it.
 void MainWindow::showHistory() {
+    refreshHistory();
     if (worker_ || journal_.size() == 0) {
         return;
     }

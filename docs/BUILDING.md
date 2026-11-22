@@ -20,7 +20,7 @@ Nothing else: no third-party library.
 - The **engine** (`core/`) is a static library, `rencore`, that depends on QtCore only.
 - The **application** (`app/`) is the executable `antrenamer-qt` (Qt Widgets and Network). It links `rencore`.
 - Compiler warnings (`-Wall -Wextra -Wshadow`) are on for GCC and Clang; the code builds without any. The CI builds with `-DANTREN_WERROR=ON` (a warning fails the build) and runs clang-tidy (`.clang-tidy`). To run it yourself: configure with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`, then `clang-tidy -p <build folder> core/*.cpp app/*.cpp` (on Windows: `pacman -S mingw-w64-ucrt-x86_64-clang-tools-extra` in MSYS2).
-- Two test programs: `test_core` (engine only) and `test_panel` (the actions editor, without a window).
+- Three test programs: `test_core` (engine only), `test_panel` (the actions editor, without a window) and `test_filter_dialog` (the Filter files dialog).
 - The version comes from the `VERSION` file at the root, the single source: CMake reads it and passes it to the program.
 - `CMakePresets.json` holds the settings per platform, so a build is always `cmake --preset <name>` then `cmake --build --preset <name>`.
 
@@ -53,7 +53,7 @@ ctest --test-dir build-mingw --output-on-failure
 
 On Windows, `scripts\windows\vscode-mingw.ps1 build` (also `configure`, `run`, `clean`) finds MSYS2 by itself and runs the same commands, which is what the VS Code tasks use. The `mingw` preset uses the `QT_ROOT` environment variable as the Qt location when it is set; in an MSYS2 shell Qt is found anyway.
 
-The tests need no screen: `test_panel` sets `QT_QPA_PLATFORM=offscreen` itself.
+The tests need no screen: `test_panel` and `test_filter_dialog` set `QT_QPA_PLATFORM=offscreen` themselves (not on Windows, where the deployed `windows` plugin is the only one and nothing is shown).
 
 Do not share a build folder between systems (for example one configured from WSL and then used from Windows): the CMake cache keeps the source path. `vscode-mingw.ps1` deletes a build folder whose cache points to another source path.
 

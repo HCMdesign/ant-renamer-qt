@@ -2,6 +2,9 @@
 
 Ant Renamer Qt, 3.x versions (C++/Qt 6 port by Frédéric Biron, developed in parallel with the original):
 
+- 3.3.0-beta.1 (22/11/2026)
+  - New: Filter files (toolbar button and F4, right-click menu): keeps or removes the files of the list that match a period, a time of the day and a size, on the modification date, the creation date or the EXIF shooting date; the filter can be corrected and cleared, and a hidden-files count is shown while it is on.
+  - Fix: undoing a pass made with "Copy instead of rename" deletes the copies that have not been changed. Fix: a silent run (-q) and an open window no longer erase each other's undo history.
 - 3.2.0 (20/11/2026)
   - Final version of 3.2.0: the code of 3.2.0-beta.3 ("Use EPUB info" action, no more empty-looking names, Explorer menu asking what to add, files left alone shown in orange, help and credits cleaned up).
 - 3.2.0-beta.3 (18/11/2026)

@@ -25,10 +25,18 @@ There are also four buttons allowing to move items within the list (up, down, to
 
 This order can also be changed by sorting the files by clicking on column headers (click again to reverse the order). Sorting really changes the order of the list, so it is also the order in which the files are processed: it decides, for example, which file gets which number in an [Enumeration](actions_en.md#enum). In Ant Renamer Qt, clicking on a column header sorts the text columns in natural order by default ("file 2" before "file 10"). The [options](options_en.md#files) allow to get the alphabetical order of the original program instead. To disable the automatic sort, you can click with right mouse button on the headers of the list and select the "Unsorted items" command.
 
-When you click with right mouse button on the list, a menu appears allowing to remove the selected files or all the files, to select all items of the list, to select none or to invert the selection, to refresh the preview, and to export it: "Export preview..." writes the files shown (the "Changed only" and "Hidden files" filters apply) to a CSV file (columns Folder, Name, New name; semicolon, UTF-8 with a BOM so that Excel and LibreOffice read the accents) or to a text file with the new names only, one per line. A file with no preview keeps its current name, so refresh the preview first.
+When you click with right mouse button on the list, a menu appears allowing to remove the selected files or all the files, to **filter the files** (see below), to select all items of the list, to select none or to invert the selection, to refresh the preview, and to export it: "Export preview..." writes the files shown (the "Changed only" and "Hidden files" filters apply) to a CSV file (columns Folder, Name, New name; semicolon, UTF-8 with a BOM so that Excel and LibreOffice read the accents) or to a text file with the new names only, one per line. A file with no preview keeps its current name, so refresh the preview first.
 
 The icon of each file (based on its extension) can be displayed, and a double-click can open the file with the program associated with it: see the [options](options_en.md#display).
 
 Folders can be in the list too (see [adding files & folders](addfiles_en.md)). They are renamed like files, in the order of the list; the files of the list that are inside a renamed folder follow it.
 
 The number of files of the list is displayed at the bottom of the window.
+
+### Filter files
+
+*(Ant Renamer Qt)* The "Filter files..." button (F4, with a funnel) of the toolbar, also in the right-click menu, keeps, or removes, the files of the list that match what you tick: a period ("From", "To"), a time of the day ("Time of the day, from ... to ...", for example everything shot between 14:00 and 15:00 whatever the day; 22:00 to 02:00 works across midnight) and a size ("Size at least", "Size at most"). All the ticked criteria must hold together.
+
+The date looked at is chosen above them: the modification date, the creation date (not kept by every Linux file system: a file without one never matches) or the shooting date (the EXIF date of a picture, else its modification date). The size limits are for files; a folder is judged on its dates.
+
+The files are only taken out of the list: nothing is touched on the disk, and you can add them again. To correct a filter, press the button again: the last criteria are shown, and "Put back the files removed by the previous filter first" (ticked) restores the files the filter took out (each one right after the file that was before it, at the end if that file is gone) before the new filter is applied. While a filter hides files, the count at the bottom of the window turns orange ("12 files, 340 hidden by the filter") and the Filter button stays pressed. The "Clear the filter" button (or no criterion ticked, with the files put back) gives back every file that was taken out and filters nothing. "Remove all" forgets them.

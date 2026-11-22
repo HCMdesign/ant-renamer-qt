@@ -1,6 +1,6 @@
 # Ant Renamer Qt: function guide
 
-*Every function of Ant Renamer Qt 3.2.0 with instructions.*
+*Every function of Ant Renamer Qt 3.3.0-beta.1 with instructions.*
 French version: [USER_GUIDE_fr.md](USER_GUIDE_fr.md). Recipes (step-by-step use cases): [USER_RECIPES.md](USER_RECIPES.md). Full details, page by page, with screenshots: the built-in help (F1). Differences between Windows and Linux: §13.
 
 ## 1. General principle
@@ -23,6 +23,7 @@ The program only changes **names** (or copies the files under a new name); it ne
 | Shift+F1 | About | Esc | Stop |
 | F2 | Add files | F10 | Options |
 | F3 | Add folders | F11 | Always on top |
+| F4 | Filter files | | |
 | F5 | Refresh preview | F12 | Undo |
 | Shift+F12 | History | | |
 | F6 / F7 / F8 | Remove selected / all / dead | Alt+F4 | Exit |
@@ -46,6 +47,7 @@ The program only changes **names** (or copies the files under a new name); it ne
 | Remove selected (F6) | removes the selected files from the list (not from disk) |
 | Remove all (F7) | empties the list |
 | Remove dead (F8) | removes files that no longer exist on disk |
+| Filter files (F4) | keeps or removes the files that match a date, a time of the day and a size |
 | Refresh preview (F5) | fills the Preview column (not automatic, for performance). It uses the batch, or the action displayed if the batch is empty |
 | Changed only | hides the files whose name does not change in the preview (a display filter only: they are still renamed, and a hidden file is never hit by "Remove selected" or the move buttons); refresh the preview first |
 | Hidden files | shows the hidden and system files of the list; off by default: they are hidden and left alone by every operation (not renamed). A warning appears before a renaming when it is on and the list holds some |
@@ -53,7 +55,8 @@ The program only changes **names** (or copies the files under a new name); it ne
 
 - **Columns**: right-click the header to show Folder, File name, Full path, Ext., Preview, Size, Creation date, Modification date. They can be resized and moved; one column at least stays visible.
 - **Sorting**: click a header (again to reverse). By default the sort is natural: "file 2" before "file 10" (Options > Files & Folders gives the alphabetical order back). **Sorting really reorders the list, so it sets the processing order**, hence the numbering order of an enumeration. Right-click > *Unsorted items* removes the sort indicator.
-- Right-click in the list: remove selected / all, select all, select none, invert the selection, refresh the preview, **Export preview...**.
+- Right-click in the list: remove selected / all, select all, select none, invert the selection, refresh the preview, **Filter files...**, **Export preview...**.
+- **Filter files...** (the funnel button of the toolbar, F4, and the right-click menu) keeps (or removes) the files of the list that match a date, a time of the day and a size, all the ticked criteria together. The date is the modification date, the creation date (not kept by every Linux file system: such a file never matches) or the shooting date (EXIF, else the modification date). "From" and "To" give a period; "Time of the day" keeps, for example, everything shot between 14:00 and 15:00 whatever the day (22:00 to 02:00 works across midnight); the size limits are for files (a folder is judged on its dates). The files are only taken out of the list, nothing is touched on the disk. Press the button again to correct the filter: the last criteria are shown and the files it took out can be put back first (each one after the file that was before it); while a filter hides files, the count at the bottom turns orange and the button stays pressed; "Clear the filter" gives every file back.
 - **Export preview...** writes the files shown (the "Changed only" and "Hidden files" filters apply) to a CSV file (columns Folder, Name, New name; semicolon, every field quoted, UTF-8 with a BOM so that Excel and LibreOffice read the accents) or to a text file with the new names only, one per line. A file with no preview keeps its current name: refresh the preview first. Useful to proofread a big batch or to keep a trace.
 - Double-click a file: opens it with its associated program, if "Launch file on double click" is ticked (Options > Files & Folders).
 - Folders can be in the list too: they are renamed like files (in list order); the files of the list that are inside a renamed folder follow it.
@@ -206,6 +209,6 @@ Same engine, other presentation, set in Options > Display. It is the default of 
 
 - EXIF: 36 tags only, MakerNote not decoded; IPTC read only in JPEG.
 - Audio tags: ID3 only (MP3); FLAC, OGG, M4A are not read.
-- Undo: pass after pass (the last 50, kept when the program is closed), inside a session only from its last pass; files copied with "Copy instead of rename" are not removed.
+- Undo: pass after pass (the last 50, kept when the program is closed), inside a session only from its last pass; the copies made with "Copy instead of rename" are deleted by the undo if they have not been changed since (the originals are never touched).
 - The short Windows 11 context menu is not supported (use "Show more options").
 - The help in Croatian and Tamil shows English for the pages written for Ant Renamer Qt.

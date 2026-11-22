@@ -144,6 +144,7 @@ private:
     void removeSelectedFiles();
     void removeAllFiles();
     void removeDeadFiles();
+    void filterFiles();  // keep or remove the files of the list by date, time of the day and size (the Filter button)
     void fileHeaderMenu(const QPoint& pos);
     void sortFilesBy(int column);
     int sortColumn_ = -1;
@@ -181,6 +182,7 @@ private:
     void showHistory();
     void updateUndoState();
     void saveHistory();
+    void refreshHistory();  // takes in the passes a `-q` run wrote to the history file while this window was open
     void onProgress(const Snapshot& s);
     void onFinished();
     void setBusy(bool busy);  // disables what would modify the lists, the batch or the options while a run is in progress
@@ -190,6 +192,15 @@ private:
     void rebuildLog();
     void logAction(int which);
 
+    ren::FileFilter lastFilter_;  // the criteria of the last filter, shown again to correct them
+    bool lastKeep_ = true;
+    // A file the last filter took out of the list, and the kept file just before it: it is put back after that one.
+    struct FilterRemoved {
+        QString path, anchor;
+    };
+    QList<FilterRemoved> filterRemoved_;  // put back from the dialog
+    void insertFileAt(const QString& path, int row);
+    void showFilterState();  // the Filter button (pressed while files are hidden) and the file count
     ren::Journal journal_;  // the passes (kept between runs, see historyFile()), for Undo and the history window
     ren::FileList files_;
     ren::ActionList batch_;
@@ -231,7 +242,7 @@ private:
 
     QAction *aGo_, *aStop_, *aUndo_, *aHistory_, *aOnTop_, *aTheme_, *aOptions_, *aHelp_, *aAbout_, *aExit_;
     QAction* aTab_[3];
-    QAction *aAddFiles_, *aAddFolders_, *aRemoveSel_, *aRemoveAll_, *aRemoveDead_, *aPreview_, *aChangedOnly_, *aShowHidden_;
+    QAction *aFilter_, *aAddFiles_, *aAddFolders_, *aRemoveSel_, *aRemoveAll_, *aRemoveDead_, *aPreview_, *aChangedOnly_, *aShowHidden_;
     QAction *aBatchAdd_, *aBatchEdit_, *aBatchRemoveSel_, *aBatchClear_, *aBatchOpen_, *aBatchSave_;
     QAction *aLogFilter_, *aLogOk_, *aLogError_, *aLogNot_, *aLogClear_, *aLogSave_, *aLogCopy_;
     QAction *aUp_, *aDown_, *aTop_, *aBottom_;

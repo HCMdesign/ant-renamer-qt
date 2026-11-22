@@ -4,13 +4,22 @@
 For the technical detail: [CHANGELOG](../CHANGELOG.md). For the road travelled since the original program (what is kept,
 the deliberate differences, what was added): [PRESENTATION.md](PRESENTATION.md).
 
-Current version: **3.2.0**.
+Current version: **3.3.0-beta.1**.
+
+## 3.3.0-beta.1
+
+| What is new | Since |
+|---|---|
+| **Filter files**: the funnel button of the toolbar (F4) or right-click in the list, "Filter files...", keeps (or removes) the files that match a period, a time of the day ("everything shot between 14:00 and 15:00") and a size, on the modification date, the creation date or the EXIF shooting date. Nothing is touched on the disk, and the filter can be corrected: the last criteria are shown again and the files it took out can be put back first, or all given back with "Clear the filter", each one at its place. While a filter hides files, the file count turns orange ("12 files, 340 hidden by the filter") and the button stays pressed. | 3.3.0-beta.1 |
+| **Undo deletes the copies** made with "Copy instead of rename", if they have not been changed since. | 3.3.0-beta.1 |
+| **Silent command line and open window**: a `-q` run and a window left open no longer erase each other's undo history. | 3.3.0-beta.1 |
 
 ## 3.2.0
 
 | What is new | Since |
 |---|---|
 | **Final version**: the code of 3.2.0-beta.3, with everything of the 3.2.0 betas ("Use EPUB info" action, no more empty-looking names, Explorer menu asking what to add, files left alone in orange, help and credits cleaned up). | 3.2.0 |
+| **On Flathub**: Ant Renamer Qt can be installed from Flathub on Linux (x86-64 and arm64): `flatpak install flathub fr.morfredus.AntRenamerQt`. The package is built from the 3.2.0 sources; the program has no network access in it, so the new-version check is hidden. | 3.2.0 |
 
 ## 3.2.0-beta.3
 

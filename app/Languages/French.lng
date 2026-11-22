@@ -526,6 +526,8 @@ Si m ou mm suit h ou hh, il est interprété comme minutes plutôt que mois]]>
     <Item Name="undoHistoryClear" Value="Effacer l'historique"/>
     <Item Name="undoHistoryClearConfirm" Value="Oublier toutes les passes ? Elles ne pourront plus être annulées."/>
     <Item Name="undoChanged" Value="Le fichier a été modifié après le renommage"/>
+    <Item Name="undoCopyNotDeleted" Value="Impossible de supprimer la copie %1"/>
+    <Item Name="undoCopyDeleted" Value="Copie %1 supprimée"/>
     <Item Name="undoLogStart" Value="Annulation des dernières passes de renommage"/>
     <Item Name="undoOptHeader" Value="Bouton Annuler"/>
     <Item Name="undoOptLabel" Value="Le bouton Annuler :"/>
@@ -539,6 +541,27 @@ Si m ou mm suit h ou hh, il est interprété comme minutes plutôt que mois]]>
     <Item Name="helpBack" Value="Retour"/>
     <Item Name="helpForward" Value="Suivant"/>
     <Item Name="exportPreviewMenu" Value="Exporter l'aperçu..."/>
+    <Item Name="filterMenu" Value="Filtrer les fichiers..."/>
+    <Item Name="filterTitle" Value="Filtrer les fichiers"/>
+    <Item Name="filterDateKind" Value="Date à regarder :"/>
+    <Item Name="filterModified" Value="Date de modification"/>
+    <Item Name="filterCreated" Value="Date de création"/>
+    <Item Name="filterShot" Value="Date de prise de vue (EXIF ; sinon date de modification)"/>
+    <Item Name="filterFrom" Value="Du"/>
+    <Item Name="filterTo" Value="Au"/>
+    <Item Name="filterTimeFrom" Value="Heure de la journée, de"/>
+    <Item Name="filterTimeTo" Value="à"/>
+    <Item Name="filterMin" Value="Taille d'au moins"/>
+    <Item Name="filterMax" Value="Taille d'au plus"/>
+    <Item Name="filterKeep" Value="Garder les fichiers qui correspondent"/>
+    <Item Name="filterRemove" Value="Retirer les fichiers qui correspondent"/>
+    <Item Name="filterNothing" Value="Rien à filtrer : cochez au moins un critère."/>
+    <Item Name="filterCount" Value="%1 fichiers, %2 masqués par le filtre"/>
+    <Item Name="filterActiveHint" Value="Un filtre masque %1 fichier(s) de la liste. Appuyez pour le corriger ou l'effacer."/>
+    <Item Name="filterClear" Value="Effacer le filtre"/>
+    <Item Name="filterHint" Value="Garder ou retirer les fichiers de la liste selon la date, l'heure de la journée et la taille"/>
+    <Item Name="filterPutBack" Value="Remettre d'abord les %1 fichier(s) retiré(s) par le filtre précédent"/>
+    <Item Name="filterNoFile" Value="Aucun fichier à filtrer : ajoutez d'abord des fichiers."/>
     <Item Name="exportPreview" Value="Exporter l'aperçu"/>
     <Item Name="exportPreviewCsv" Value="Fichier CSV, noms actuels et nouveaux (*.csv)"/>
     <Item Name="saveLogCsv" Value="Fichier CSV (*.csv)"/>

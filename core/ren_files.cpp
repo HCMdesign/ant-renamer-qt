@@ -169,8 +169,9 @@ bool File::rename(QString newName) {
             moveSidecars(source, newName, false);
         }
         status_ = State::Ok;
-        if (moving && onMoved) {
+        if (onMoved) {
             Move m{source, newName, sidecarsMoved_};
+            m.copy = !moving;
             if (!isFolder_) {  // a folder's date changes with its content: not a usable fingerprint
                 const QFileInfo fi(newName);
                 m.size = fi.size();
@@ -221,6 +222,21 @@ bool File::undoMove(const QString& from, const std::vector<std::pair<QString, QS
     oldName_ = from;
     sidecarsMoved_ = sidecars;
     return revert();
+}
+
+bool File::undoCopy(const QString& from) {
+    const QString copy = filePath();
+    if (!QFile::remove(copy)) {
+        description_ = tr("Could not delete the copy %1").arg(copy);
+        status_ = State::Error;
+        return false;
+    }
+    description_ = tr("Copy %1 deleted").arg(copy);
+    status_ = State::Ok;
+    oldName_.clear();
+    sidecarsMoved_.clear();
+    followPath(from);  // the entry is the original again
+    return true;
 }
 
 void File::followPath(const QString& to) {
@@ -364,7 +380,7 @@ int FileList::undoPasses(int count, const std::function<void(File&)>& progress, 
                 f->setError(tr("%1 was not renamed : %2").arg(m.to, tr("The file was changed after the renaming")),
                             State::Error);
             } else {
-                ok = f->undoMove(m.from, m.sidecars);
+                ok = m.copy ? f->undoCopy(m.from) : f->undoMove(m.from, m.sidecars);
             }
             if (progress) {
                 progress(*f);
@@ -401,6 +417,7 @@ void Journal::endPass() {
         return;
     }
     ++next_;
+    seen_.insert(keyOf(cur_));
     passes_.push_back(std::move(cur_));
     cur_ = Pass{};
     trim();
@@ -419,6 +436,7 @@ QByteArray Journal::toJson() const {
                                   {u"to"_s, m.to},
                                   {u"size"_s, m.size},
                                   {u"mtime"_s, m.mtime},
+                                  {u"copy"_s, m.copy},
                                   {u"sidecars"_s, sc}});
         }
         ps.append(QJsonObject{{u"number"_s, p.number},
@@ -436,6 +454,7 @@ bool Journal::fromJson(const QByteArray& data) {
         return false;
     }
     passes_.clear();
+    seen_.clear();
     open_ = false;
     int last = 0, lastSession = 0;
     for (const QJsonValue pv : root.value(u"passes"_s).toArray()) {
@@ -452,6 +471,7 @@ bool Journal::fromJson(const QByteArray& data) {
             m.to = mo.value(u"to"_s).toString();
             m.size = qint64(mo.value(u"size"_s).toDouble(-1));
             m.mtime = qint64(mo.value(u"mtime"_s).toDouble());
+            m.copy = mo.value(u"copy"_s).toBool();
             for (const QJsonValue sv : mo.value(u"sidecars"_s).toArray()) {
                 const QJsonArray pair = sv.toArray();
                 if (pair.size() == 2) {
@@ -471,6 +491,81 @@ bool Journal::fromJson(const QByteArray& data) {
     next_ = std::max({root.value(u"next"_s).toInt(), last + 1, 1});
     session_ = lastSession + 1;  // this run is a new session
     trim();
+    for (const Pass& p : passes_) {
+        seen_.insert(keyOf(p));
+    }
+    return true;
+}
+
+QString Journal::keyOf(const Pass& p) {
+    return p.when.toString(Qt::ISODate) + u'|' + QString::number(p.number) + u'|' + QString::number(p.session) + u'|' + p.summary +
+           u'|' + (p.moves.empty() ? QString() : p.moves.front().from + u'>' + p.moves.front().to);
+}
+
+int Journal::mergeFromJson(const QByteArray& data) {
+    Journal other;
+    if (!other.fromJson(data)) {
+        return 0;
+    }
+    int added = 0;
+    for (Pass& p : other.passes_) {
+        if (!seen_.insert(keyOf(p)).second) {
+            continue;
+        }
+        const auto at = std::find_if(passes_.begin(), passes_.end(),
+                                     [&p](const Pass& q) { return q.when.toSecsSinceEpoch() > p.when.toSecsSinceEpoch(); });
+        next_ = std::max(next_, p.number + 1);
+        passes_.insert(at, std::move(p));
+        ++added;
+    }
+    trim();
+    return added;
+}
+
+// The date a filter looks at; invalid if the file has none (a creation date is not kept by every file system).
+static QDateTime filterDate(const File& f, FileFilter::DateKind kind) {
+    if (kind == FileFilter::DateKind::Created) {
+        return f.createdDate();
+    }
+    if (kind == FileFilter::DateKind::Shot && !f.isFolder()) {
+        QMap<QString, QString> t;
+        if (readExif(f.filePath(), t)) {
+            QString v = t.value(u"DateTimeOriginal"_s);
+            if (v.isEmpty()) {
+                v = t.value(u"DateTime"_s);
+            }
+            const QDateTime d = QDateTime::fromString(v, u"yyyy:MM:dd HH:mm:ss"_s);
+            if (d.isValid()) {
+                return d;
+            }
+        }
+    }
+    return f.modifiedDate();
+}
+
+bool FileFilter::matches(const File& f) const {
+    if (from || to || timeFrom || timeTo) {
+        const QDateTime d = filterDate(f, kind);
+        if (!d.isValid()) {
+            return false;
+        }
+        if ((from && d < *from) || (to && d > *to)) {
+            return false;
+        }
+        if (timeFrom || timeTo) {
+            const QTime t = d.time();
+            const QTime a = timeFrom.value_or(QTime(0, 0, 0)), b = timeTo.value_or(QTime(23, 59, 59, 999));
+            if (a <= b ? (t < a || t > b) : (t < a && t > b)) {  // across midnight: outside means between the two
+                return false;
+            }
+        }
+    }
+    if ((minSize || maxSize) && !f.isFolder()) {
+        const qint64 s = f.size();
+        if ((minSize && s < *minSize) || (maxSize && s > *maxSize)) {
+            return false;
+        }
+    }
     return true;
 }
 
