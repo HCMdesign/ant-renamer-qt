@@ -26,7 +26,7 @@ Pas de 3.2.1 à part : les corrections attendent la 3.3, pour qu'une seule versi
   - Fait dans `dev/3.3.0` : un lancement `-q` et une fenêtre ouverte ne s'écrasent plus l'historique l'un de l'autre (chacun reprend les passes de l'autre).
   - Fait dans `dev/3.3.0` : l'annulation supprime les fichiers copiés avec « Copier au lieu de renommer » s'ils sont inchangés (même taille et même date qu'au moment de la copie), et les garde avec un message sinon.
 - **Points de release** : vérifier la première mise à jour du dépôt Flathub avec `publish-antrenamer-flatpak.sh` (une vraie mise à jour, pas seulement un essai à blanc). La ligne de version doit être dans le MetaInfo avant de poser le tag (la 3.2.0 manquait, Flathub affiche donc encore la 3.1.1 ; elle est listée dans `dev/3.3.0`). Fait : la mention « EPUB est dans la bêta » est retirée de l'aide en ligne, et l'économie de CI (pas de build sur un push vers `main`, le script de release Linux qui attend la CI en cours) est essayée.
-- **AppImage** : ouvrir l'AppImage (`--appimage-extract`) et vérifier `usr/share/metainfo`, ajouter `appstreamcli validate` à la CI, vérifier les captures sur la page AppImageHub.
+- **AppImage** : l'AppImage de la 3.3.0-beta.1 a été lancée sous Fedora, comportement attendu (23/11/2026). Reste à faire : ouvrir l'AppImage (`--appimage-extract`) et vérifier `usr/share/metainfo`, ajouter `appstreamcli validate` à la CI, vérifier les captures sur la page AppImageHub.
 - **Captures d'écran** : à refaire si l'interface a changé.
 
 **Les dates des fichiers**

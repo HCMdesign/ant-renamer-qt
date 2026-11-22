@@ -26,7 +26,7 @@ No separate 3.2.1: the corrections wait for 3.3 so that one release carries them
   - Done in `dev/3.3.0`: a `-q` run and an open window no longer overwrite each other's history (each takes in the passes of the other).
   - Done in `dev/3.3.0`: the undo deletes the files copied with "Copy instead of rename" if they are unchanged (same size and date as right after the copy), and keeps them with a message otherwise.
 - **Release loose ends**: check the first update of the Flathub repository with `publish-antrenamer-flatpak.sh` (a real update, not only a dry run). The release line of the version must be in the MetaInfo before the tag is made (3.2.0 was missing, so Flathub still shows 3.1.1; it is listed in `dev/3.3.0`). Done: the "EPUB is in the beta" mention is out of the online help, and the CI economy (no build on a push to `main`, the Linux release script waiting for the running CI) is tried.
-- **AppImage**: open the AppImage (`--appimage-extract`) and check `usr/share/metainfo`, add `appstreamcli validate` to the CI, check the screenshots on the AppImageHub page.
+- **AppImage**: the 3.3.0-beta.1 AppImage was run on Fedora with the expected behaviour (2026-11-23). Still to do: open the AppImage (`--appimage-extract`) and check `usr/share/metainfo`, add `appstreamcli validate` to the CI, check the screenshots on the AppImageHub page.
 - **Screenshots**: remake them if the interface changed.
 
 **The dates of the files**
