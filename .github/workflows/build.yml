@@ -1,10 +1,10 @@
-# CI: build and test on every push, pull request and tag (Linux + Windows). Windows files are run artifacts only; releases
+# CI: build and test on every pull request and tag (Linux + Windows), and on demand. No build on a push to main: the pull
+# request has just built the same code and the release tag builds it again (three runs for one commit before). Windows files are run artifacts only; releases
 # are published separately so that SHA256SUMS matches the published files. Same code as package-win.ps1 and the CMake presets.
 name: Build
 
 on:
   push:
-    branches: [main]
     tags: ['v*']
   pull_request:
   workflow_dispatch:

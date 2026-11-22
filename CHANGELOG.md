@@ -8,6 +8,12 @@ C++/Qt 6 port and Linux port: Frédéric Biron ([morfredus](https://github.com/m
 
 ## [Unreleased]
 
+### Changed
+
+- Flatpak manifests (`packaging/flatpak/fr.morfredus.AntRenamerQt.yaml` and `.local.yaml`): build with `buildsystem: cmake-ninja` (`RelWithDebInfo`) instead of hand-written CMake commands, as asked by the Flathub reviewers; the local manifest now builds like Flathub does. Build directories `build-arm64-cross` and `build-mingw` are skipped.
+- AppStream file (`packaging/flatpak/fr.morfredus.AntRenamerQt.metainfo.xml.in`): release 3.2.0 (2026-11-20) listed; it was missing, so Flathub would have shown 3.1.1 as the latest version.
+- CI (`.github/workflows/build.yml`): no build on a push to `main` any more. A release made three runs for the same commit (pull request, push to `main`, tag); it now makes two (pull request, tag). `workflow_dispatch` is kept to build by hand. `docs/BUILDING.md` and `BUILDING_fr.md` say so.
+
 ## [3.2.0] - 2026-11-20
 
 Final version of 3.2.0: the code of 3.2.0-beta.3, unchanged. Everything the betas brought (3.2.0-beta.1 to beta.3, below): the "Use EPUB info" action, the Flatpak and documentation changes, no empty-looking names (EPUB, MP3, EXIF), the Explorer menu asking what to add, files left alone shown in orange in the preview, the help and credits cleaned up, links to the online help.
