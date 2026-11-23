@@ -10,6 +10,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QSet>
 
 #include <algorithm>
 
@@ -79,6 +80,43 @@ bool moveFile(const QString& from, const QString& to, QString& err) {
     return false;
 }
 #endif
+
+// Sets the modification date of a file, nothing else. On Windows the handle only asks for the right to write attributes (not the
+// content) and shares everything: a read-only file, or one another program keeps open (a photo editor, the Explorer preview),
+// still gets its date. On the other systems the owner can set it through a read-only handle.
+bool setFileMTime(const QString& path, const QDateTime& t, QString& err) {
+#ifdef Q_OS_WIN
+    const QString native = QDir::toNativeSeparators(path);
+    const HANDLE h = CreateFileW(reinterpret_cast<LPCWSTR>(native.utf16()), FILE_WRITE_ATTRIBUTES,
+                                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
+                                 FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+    if (h == INVALID_HANDLE_VALUE) {
+        err = lastSysError();
+        return false;
+    }
+    const quint64 ticks = quint64(t.toMSecsSinceEpoch() + 11644473600000LL) * 10000ULL;  // 100 ns since 1601
+    FILETIME ft;
+    ft.dwLowDateTime = DWORD(ticks & 0xffffffffULL);
+    ft.dwHighDateTime = DWORD(ticks >> 32);
+    const bool ok = SetFileTime(h, nullptr, nullptr, &ft) != 0;
+    if (!ok) {
+        err = lastSysError();
+    }
+    CloseHandle(h);
+    return ok;
+#else
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly)) {
+        err = f.errorString();
+        return false;
+    }
+    const bool ok = f.setFileTime(t, QFileDevice::FileModificationTime);
+    if (!ok) {
+        err = f.errorString();
+    }
+    return ok;
+#endif
+}
 
 bool changedSince(const Move& m) {
     if (m.size < 0) {
@@ -239,6 +277,68 @@ bool File::undoCopy(const QString& from) {
     return true;
 }
 
+bool File::setModifiedDate(const QDateTime& t, bool self, const QStringList& sidecars) {
+    const QString path = filePath();
+    const QString fmt = u"yyyy-MM-dd HH:mm:ss"_s;
+    const qint64 oldMs = QFileInfo(path).lastModified().toMSecsSinceEpoch();
+    QString err;
+    if (self && !setFileMTime(path, t, err)) {
+        description_ = tr("Could not change the date of %1: %2").arg(path, err);
+        status_ = State::Error;
+        return false;
+    }
+    Move m{path, path, {}};
+    m.date = true;
+    m.oldMtime = oldMs;
+    QStringList problems;
+    for (const QString& sc : sidecars) {  // a problem with a sidecar never fails the picture
+        const qint64 old = QFileInfo(sc).lastModified().toMSecsSinceEpoch();
+        QString e;
+        if (setFileMTime(sc, t, e)) {
+            m.sidecarDates.emplace_back(sc, old);
+        } else {
+            problems << tr("Could not change the date of %1: %2").arg(sc, e);
+        }
+    }
+    description_ = self ? tr("%1: modification date changed from %2 to %3")
+                              .arg(path, QDateTime::fromMSecsSinceEpoch(oldMs).toString(fmt), t.toString(fmt))
+                        : tr("%1: the modification date already is %2").arg(path, t.toString(fmt));
+    if (!m.sidecarDates.empty()) {
+        description_ += u' ' + tr("(%1 sidecar file(s) given the same date)").arg(m.sidecarDates.size());
+    }
+    for (const QString& p : std::as_const(problems)) {
+        description_ += u" ; "_s + p;
+    }
+    status_ = !self && m.sidecarDates.empty() ? State::Error : State::Ok;
+    if (status_ == State::Ok && onMoved) {
+        const QFileInfo after(path);
+        m.size = after.size();
+        m.mtime = after.lastModified().toMSecsSinceEpoch();
+        onMoved(m);
+    }
+    return status_ == State::Ok;
+}
+
+bool File::undoDate(qint64 oldMtime, const std::vector<std::pair<QString, qint64>>& sidecarDates) {
+    const QString path = filePath();
+    QString err;
+    if (!setFileMTime(path, QDateTime::fromMSecsSinceEpoch(oldMtime), err)) {
+        description_ = tr("Could not change the date of %1: %2").arg(path, err);
+        status_ = State::Error;
+        return false;
+    }
+    description_ = tr("%1: modification date put back to %2")
+                       .arg(path, QDateTime::fromMSecsSinceEpoch(oldMtime).toString(u"yyyy-MM-dd HH:mm:ss"_s));
+    for (const auto& sc : sidecarDates) {  // a sidecar that is gone or refuses is only mentioned
+        QString e;
+        if (QFileInfo::exists(sc.first) && !setFileMTime(sc.first, QDateTime::fromMSecsSinceEpoch(sc.second), e)) {
+            description_ += u" ; "_s + tr("Could not change the date of %1: %2").arg(sc.first, e);
+        }
+    }
+    status_ = State::Ok;
+    return true;
+}
+
 void File::followPath(const QString& to) {
     const QString p = QDir::toNativeSeparators(to);
     folder_ = extractFilePath(p);
@@ -380,7 +480,7 @@ int FileList::undoPasses(int count, const std::function<void(File&)>& progress, 
                 f->setError(tr("%1 was not renamed : %2").arg(m.to, tr("The file was changed after the renaming")),
                             State::Error);
             } else {
-                ok = m.copy ? f->undoCopy(m.from) : f->undoMove(m.from, m.sidecars);
+                ok = m.date ? f->undoDate(m.oldMtime, m.sidecarDates) : m.copy ? f->undoCopy(m.from) : f->undoMove(m.from, m.sidecars);
             }
             if (progress) {
                 progress(*f);
@@ -397,6 +497,50 @@ int FileList::undoPasses(int count, const std::function<void(File&)>& progress, 
         ++done;
     }
     return done;
+}
+
+int FileList::setDatesFromExif(const std::function<void(File&)>& progress) {
+    if (journal_) {
+        journal_->beginPass(tr("Set the modification date from the EXIF shooting date"));
+    }
+    int changed = 0;
+    const std::vector<DatePlan> plans = planDates(*this);
+    for (size_t i = 0; i < items_.size(); ++i) {
+        if (stopFlag()) {
+            break;
+        }
+        File& f = *items_[i];
+        const DatePlan& p = plans[i];
+        const QString path = f.filePath();
+        switch (p.kind) {
+        case DatePlan::Kind::Change:
+            if (f.setModifiedDate(p.shot, p.self, p.sidecars)) {
+                ++changed;
+            }
+            break;
+        case DatePlan::Kind::Same:
+            f.setError(tr("%1 was not changed : %2").arg(path, tr("its modification date already is the EXIF shooting date")),
+                       State::NotRenamed);
+            break;
+        case DatePlan::Kind::NoDate:
+            f.setError(tr("%1 was not changed : %2").arg(path, tr("no EXIF shooting date")), State::Info);
+            break;
+        case DatePlan::Kind::Sidecar:
+            f.setError(tr("%1 was not changed : %2").arg(path, tr("follows its picture")), State::Info);
+            break;
+        case DatePlan::Kind::Skipped:
+            f.setError(tr("%1 was not changed : %2").arg(path, f.isFolder() ? tr("a folder has no EXIF date") : tr("hidden file")),
+                       State::Info);
+            break;
+        }
+        if (progress) {
+            progress(f);
+        }
+    }
+    if (journal_) {
+        journal_->endPass();
+    }
+    return changed;
 }
 
 void Journal::beginPass(const QString& summary) {
@@ -428,6 +572,10 @@ QByteArray Journal::toJson() const {
     for (const Pass& p : passes_) {
         QJsonArray ms;
         for (const Move& m : p.moves) {
+            QJsonArray sd;
+            for (const auto& d : m.sidecarDates) {
+                sd.append(QJsonArray{d.first, double(d.second)});
+            }
             QJsonArray sc;
             for (const auto& s : m.sidecars) {
                 sc.append(QJsonArray{s.first, s.second});
@@ -437,6 +585,9 @@ QByteArray Journal::toJson() const {
                                   {u"size"_s, m.size},
                                   {u"mtime"_s, m.mtime},
                                   {u"copy"_s, m.copy},
+                                  {u"date"_s, m.date},
+                                  {u"oldmtime"_s, m.oldMtime},
+                                  {u"sidecarDates"_s, sd},
                                   {u"sidecars"_s, sc}});
         }
         ps.append(QJsonObject{{u"number"_s, p.number},
@@ -472,6 +623,14 @@ bool Journal::fromJson(const QByteArray& data) {
             m.size = qint64(mo.value(u"size"_s).toDouble(-1));
             m.mtime = qint64(mo.value(u"mtime"_s).toDouble());
             m.copy = mo.value(u"copy"_s).toBool();
+            m.date = mo.value(u"date"_s).toBool();
+            m.oldMtime = qint64(mo.value(u"oldmtime"_s).toDouble());
+            for (const QJsonValue dv : mo.value(u"sidecarDates"_s).toArray()) {
+                const QJsonArray pair = dv.toArray();
+                if (pair.size() == 2) {
+                    m.sidecarDates.emplace_back(pair[0].toString(), qint64(pair[1].toDouble()));
+                }
+            }
             for (const QJsonValue sv : mo.value(u"sidecars"_s).toArray()) {
                 const QJsonArray pair = sv.toArray();
                 if (pair.size() == 2) {
@@ -520,6 +679,92 @@ int Journal::mergeFromJson(const QByteArray& data) {
     }
     trim();
     return added;
+}
+
+std::optional<QDateTime> shootingDate(const QString& path) {
+    QMap<QString, QString> t;
+    if (!readExif(path, t)) {
+        return std::nullopt;
+    }
+    const QString v = t.value(u"DateTimeOriginal"_s).trimmed();
+    QDateTime d = QDateTime::fromString(v, u"yyyy:MM:dd HH:mm:ss"_s);
+    if (!d.isValid()) {  // XMP writes ISO 8601, with or without a zone
+        d = QDateTime::fromString(v, Qt::ISODate);
+        if (d.isValid() && d.timeSpec() != Qt::LocalTime) {
+            d = d.toLocalTime();
+        }
+    }
+    if (!d.isValid() || d.date().year() < 1970) {  // 0000:00:00 00:00:00 and the like: a camera without a clock
+        return std::nullopt;
+    }
+    return d;
+}
+
+DatePlan planDate(const File& f) {
+    DatePlan p;
+    if (f.isFolder() || (options().skipHidden && f.hidden)) {
+        return p;
+    }
+    p.current = QFileInfo(f.filePath()).lastModified();
+    const auto shot = shootingDate(f.filePath());
+    if (!shot) {
+        p.kind = DatePlan::Kind::NoDate;
+        return p;
+    }
+    p.shot = *shot;
+    p.self = p.current.toSecsSinceEpoch() != p.shot.toSecsSinceEpoch();
+    if (options().renameSidecar) {  // the sidecars follow their picture, like for a renaming
+        // the sidecars of the picture, and those of its RAW (IMG.CR2.xmp): the RAW is itself a sidecar of the picture
+        QStringList cands = sidecarCandidates(f.filePath(), sidecarExtensions());
+        for (const QString& c : QStringList(cands)) {
+            if (rawExtensions().contains(QFileInfo(c).suffix(), Qt::CaseInsensitive) && QFileInfo(c).isFile()) {
+                cands += sidecarCandidates(c, sidecarExtensions());
+            }
+        }
+        QSet<QString> seen;
+        for (const QString& c : std::as_const(cands)) {
+            const QFileInfo ci(c);
+#ifdef Q_OS_WIN
+            const QString key = ci.canonicalFilePath().toLower();  // "a.xmp" and "a.XMP" are one file (canonicalFilePath keeps the case given)
+#else
+            const QString key = ci.canonicalFilePath();
+#endif
+            if (ci.isFile() && !seen.contains(key)) {
+                seen.insert(key);
+                if (ci.lastModified().toSecsSinceEpoch() != p.shot.toSecsSinceEpoch()) {
+                    p.sidecars << c;
+                }
+            }
+        }
+    }
+    p.kind = p.self || !p.sidecars.isEmpty() ? DatePlan::Kind::Change : DatePlan::Kind::Same;
+    return p;
+}
+
+std::vector<DatePlan> planDates(FileList& list) {
+    QSet<QString> followers;  // the sidecars of the pictures of the list (names compared without case, as listedPicture does)
+    if (options().renameSidecar) {
+        for (size_t i = 0; i < list.size(); ++i) {
+            const File& g = list.at(i);
+            if (!g.isFolder()) {
+                for (const QString& c : sidecarCandidates(g.filePath(), sidecarExtensions())) {
+                    followers.insert(QDir::fromNativeSeparators(c).toLower());
+                }
+            }
+        }
+    }
+    std::vector<DatePlan> plans;
+    for (size_t i = 0; i < list.size(); ++i) {
+        const File& f = list.at(i);
+        if (!f.isFolder() && followers.contains(QDir::fromNativeSeparators(f.filePath()).toLower())) {
+            DatePlan p;
+            p.kind = DatePlan::Kind::Sidecar;
+            plans.push_back(p);
+        } else {
+            plans.push_back(planDate(f));
+        }
+    }
+    return plans;
 }
 
 // The date a filter looks at; invalid if the file has none (a creation date is not kept by every file system).

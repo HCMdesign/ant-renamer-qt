@@ -9,10 +9,11 @@ Ce sont des idées, pas des promesses : certaines ne seront peut-être jamais fa
 - Les sources des demandes : le forum « Comments » du programme d'origine, forum.antp.be (120 sujets lus le 22/10/2026), puis les issues et discussions de ce projet.
 - Rien n'est écrit pour une idée dont personne n'a besoin : une idée attend une vraie demande ou un vrai problème.
 
-## Où nous en sommes (22/11/2026)
+## Où nous en sommes (23/11/2026)
 
 - **3.2.0** publiée le 20/11/2026 : l'opération « Infos EPUB », plus de noms qui ont l'air vides (EPUB, MP3, EXIF), le menu de l'Explorateur qui demande quoi ajouter, les fichiers laissés tels quels affichés en orange dans l'aperçu, l'annonce de mise à jour qui montre les notes de version, l'aide et les crédits nettoyés, des liens vers l'aide en ligne, un nouveau manifeste Flatpak construit avec `cmake --install`.
 - **Diffusion** : l'application est sur Flathub depuis le 22/11/2026 (mises à jour par pull request sur `flathub/fr.morfredus.AntRenamerQt`, avec `publish-antrenamer-flatpak.sh`), dans AppImageHub et Portable Linux Apps ; une pull request winget attend un modérateur.
+- **3.3.0-beta.1** publiée le 22/11/2026 (Filtrer les fichiers, annulation des copies, historique partagé), essayée sous Ubuntu, Fedora et Windows 11 et 10. **3.3.0-beta.2** est préparée sur `dev/3.3.0` (Mettre les dates d'après l'EXIF, page d'accueil du .deb).
 - La branche `dev/3.3.0` est ouverte ; elle porte aussi les corrections prévues pour une 3.2.1.
 
 ## Versions à venir, dans l'ordre
@@ -26,12 +27,12 @@ Pas de 3.2.1 à part : les corrections attendent la 3.3, pour qu'une seule versi
   - Fait dans `dev/3.3.0` : un lancement `-q` et une fenêtre ouverte ne s'écrasent plus l'historique l'un de l'autre (chacun reprend les passes de l'autre).
   - Fait dans `dev/3.3.0` : l'annulation supprime les fichiers copiés avec « Copier au lieu de renommer » s'ils sont inchangés (même taille et même date qu'au moment de la copie), et les garde avec un message sinon.
 - **Points de release** : vérifier la première mise à jour du dépôt Flathub avec `publish-antrenamer-flatpak.sh` (une vraie mise à jour, pas seulement un essai à blanc). La ligne de version doit être dans le MetaInfo avant de poser le tag (la 3.2.0 manquait, Flathub affiche donc encore la 3.1.1 ; elle est listée dans `dev/3.3.0`). Fait : la mention « EPUB est dans la bêta » est retirée de l'aide en ligne, et l'économie de CI (pas de build sur un push vers `main`, le script de release Linux qui attend la CI en cours) est essayée.
-- **AppImage** : l'AppImage de la 3.3.0-beta.1 a été lancée sous Fedora, comportement attendu (23/11/2026). Reste à faire : ouvrir l'AppImage (`--appimage-extract`) et vérifier `usr/share/metainfo`, ajouter `appstreamcli validate` à la CI, vérifier les captures sur la page AppImageHub.
+- **AppImage** : l'AppImage de la 3.3.0-beta.1 a été lancée sous Fedora et Ubuntu, comportement attendu (23/11/2026). Le metainfo de l'AppImage (`--appimage-extract`, `usr/share/metainfo/fr.morfredus.AntRenamerQt.metainfo.xml`) est présent et `appstreamcli validate` réussit (23/11/2026, Ubuntu) ; `--pedantic` note seulement les majuscules de l'identifiant du composant, qui reste tel quel puisque c'est l'identifiant Flathub. `appstreamcli validate` est dans la CI (job Linux, 23/11/2026). Reste à faire : vérifier les captures sur la page AppImageHub.
 - **Captures d'écran** : à refaire si l'interface a changé.
 
 **Les dates des fichiers**
 
-- **Remettre la date de modification d'un fichier en accord avec sa date de prise de vue EXIF** (demandé de nombreuses fois, « sur la liste des choses à faire » de l'original depuis 2005). Cas typique : des photos copiées dont la date du système de fichiers a été écrasée. Seule la date de modification est concernée : elle se change de la même façon sous Windows et sous Linux. La date de création est exclue : elle ne se change pas sous Linux avec les outils standard (à vérifier), et une simple copie la remet à zéro. Les dates lues dans un nom de fichier viendraient plus tard, seulement sur demande.
+- **Remettre la date de modification d'un fichier en accord avec sa date de prise de vue EXIF** (fait dans `dev/3.3.0`, clic droit « Mettre les dates d'après l'EXIF... », `--set-dates-from-exif` ; demandé de nombreuses fois, « sur la liste des choses à faire » de l'original depuis 2005). Cas typique : des photos copiées dont la date du système de fichiers a été écrasée. Seule la date de modification est concernée : elle se change de la même façon sous Windows et sous Linux. La date de création est exclue : elle ne se change pas sous Linux avec les outils standard (à vérifier), et une simple copie la remet à zéro. Les dates lues dans un nom de fichier viendraient plus tard, seulement sur demande.
   **Choix délibéré, avec des garde-fous** (les originaux des photos ne doivent pas pouvoir être falsifiés par accident ni facilement) :
   - La date vient du fichier lui-même (EXIF). Aucune date saisie à la main, et aucune date inventée : un fichier sans date EXIF est laissé tel quel et le journal le dit.
   - Le programme ne change que la date du système de fichiers, jamais le contenu du fichier : la date de prise de vue EXIF et les tags ne sont pas touchés.

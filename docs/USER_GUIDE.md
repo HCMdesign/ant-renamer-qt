@@ -1,6 +1,6 @@
 # Ant Renamer Qt: function guide
 
-*Every function of Ant Renamer Qt 3.3.0-beta.1 with instructions.*
+*Every function of Ant Renamer Qt 3.3.0-beta.2 with instructions.*
 French version: [USER_GUIDE_fr.md](USER_GUIDE_fr.md). Recipes (step-by-step use cases): [USER_RECIPES.md](USER_RECIPES.md). Full details, page by page, with screenshots: the built-in help (F1). Differences between Windows and Linux: §13.
 
 ## 1. General principle
@@ -55,9 +55,10 @@ The program only changes **names** (or copies the files under a new name); it ne
 
 - **Columns**: right-click the header to show Folder, File name, Full path, Ext., Preview, Size, Creation date, Modification date. They can be resized and moved; one column at least stays visible.
 - **Sorting**: click a header (again to reverse). By default the sort is natural: "file 2" before "file 10" (Options > Files & Folders gives the alphabetical order back). **Sorting really reorders the list, so it sets the processing order**, hence the numbering order of an enumeration. Right-click > *Unsorted items* removes the sort indicator.
-- Right-click in the list: remove selected / all, select all, select none, invert the selection, refresh the preview, **Filter files...**, **Export preview...**.
+- Right-click in the list: remove selected / all, select all, select none, invert the selection, refresh the preview, **Filter files...**, **Export preview...**, **Set dates from EXIF...**.
 - **Filter files...** (the funnel button of the toolbar, F4, and the right-click menu) keeps (or removes) the files of the list that match a date, a time of the day and a size, all the ticked criteria together. The date is the modification date, the creation date (not kept by every Linux file system: such a file never matches) or the shooting date (EXIF, else the modification date). "From" and "To" give a period; "Time of the day" keeps, for example, everything shot between 14:00 and 15:00 whatever the day (22:00 to 02:00 works across midnight); the size limits are for files (a folder is judged on its dates). The files are only taken out of the list, nothing is touched on the disk. Press the button again to correct the filter: the last criteria are shown and the files it took out can be put back first (each one after the file that was before it); while a filter hides files, the count at the bottom turns orange and the button stays pressed; "Clear the filter" gives every file back.
 - **Export preview...** writes the files shown (the "Changed only" and "Hidden files" filters apply) to a CSV file (columns Folder, Name, New name; semicolon, every field quoted, UTF-8 with a BOM so that Excel and LibreOffice read the accents) or to a text file with the new names only, one per line. A file with no preview keeps its current name: refresh the preview first. Useful to proofread a big batch or to keep a trace.
+- **Set dates from EXIF...** (right-click menu only: no button, no shortcut) gives the files, as their modification date, the shooting date written in their EXIF data (or XMP sidecar). A typical case: photos that were copied and whose date was overwritten. It is never automatic: a table shows the old and the new date of every file and nothing changes before you press **Set the dates**. Only the modification date kept by the file system changes: the content of the file, its EXIF data and its tags are not touched, and no date is typed by hand or invented (a file with no EXIF shooting date, a folder and a hidden file are left alone, and the log says why). The sidecar files (`.xmp`, `.dop`, the RAW of a JPEG...) follow their picture like in a renaming: they get the same date. The log keeps the old and the new date, and the history (Undo) puts the old date back. **The modification date is not a proof of authenticity**: for originals that must stay evidence, work on copies (option *Copy instead of rename*). On the command line, `--set-dates-from-exif` replaces the renaming (see the table of the parameters).
 - Double-click a file: opens it with its associated program, if "Launch file on double click" is ticked (Options > Files & Folders).
 - Folders can be in the list too: they are renamed like files (in list order); the files of the list that are inside a renamed folder follow it.
 
@@ -153,6 +154,7 @@ Good to know: a missing tag gives an empty text; multiple values are joined with
 | `-g` | starts the processing once files and batch are loaded |
 | `-x` | exits when the processing is done |
 | `-q` | silent mode for scripts: no window, no dialog, same as `-g -x`. Exit code: 0 all done, 1 at least one file failed, 2 nothing done (no file, no batch, unreadable batch file, hidden files in the list). Without `-q`, a launch with `-g` or `-x` while another window is open returns 3 (only one window at a time) |
+| `--set-dates-from-exif` | instead of renaming, gives the files their EXIF shooting date as modification date. With `-g` or `-q` it runs at once (the option is the consent), alone the window shows the table of the dates and asks first |
 | `-af` / `-aF` / `-afr` | adds the following files / folders / recursive content of folders (wildcards `*` `?` accepted) |
 | `--shell path` | adds the path to the window that is already open (used by the Explorer menu) |
 | `--install-shell` / `--remove-shell` | adds / removes the Explorer menu entry (Windows), then exits |

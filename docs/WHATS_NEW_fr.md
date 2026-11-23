@@ -4,7 +4,14 @@
 Pour le détail technique : [CHANGELOG](../CHANGELOG.md). Pour le chemin parcouru depuis le programme d'origine (ce qui est
 conservé, les différences voulues, ce qui a été ajouté) : [PRESENTATION_fr.md](PRESENTATION_fr.md).
 
-Version courante : **3.3.0-beta.1**.
+Version courante : **3.3.0-beta.2**.
+
+## 3.3.0-beta.2
+
+| Nouveauté | Depuis |
+|---|---|
+| **Mettre les dates d'après l'EXIF** : clic droit dans la liste, « Mettre les dates d'après l'EXIF... », donne aux fichiers leur date de prise de vue EXIF comme date de modification (photos copiées dont la date a été écrasée). Un tableau montre d'abord l'ancienne et la nouvelle date, rien ne change avant votre confirmation, le contenu des fichiers n'est jamais touché, et l'historique peut annuler. En ligne de commande : `--set-dates-from-exif`. | 3.3.0-beta.2 |
+| **Paquet .deb** : sa page d'accueil est le dépôt GitHub (le centre de logiciels affichait le site du programme d'origine comme site du développeur). | 3.3.0-beta.2 |
 
 ## 3.3.0-beta.1
 

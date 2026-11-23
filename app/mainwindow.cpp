@@ -42,6 +42,12 @@ void ItemTree::dropEvent(QDropEvent* e) {
 // --- RenWorker ---
 void RenWorker::run() {
     try {
+        if (op_ == Op::SetDates) {
+            files_->setDatesFromExif([this](File& f) {
+                emit progress({f.id(), f.description(), int(f.status()), 0, 0, QString(), f.fileFolder(), f.fileName(), f.preview});
+            });
+            return;
+        }
         if (op_ == Op::Undo) {
             files_->undoPasses(
                 undoCount_,
@@ -260,6 +266,10 @@ void MainWindow::createActions() {
                           TbFilter, K(Qt::Key_F4));
     aFilter_->setCheckable(true);  // pressed while a filter hides files: set by showFilterState(), never by the click
     aPreview_ = makeAction(tr_("Preview"), tr_("Refresh preview"), TbPreview, K(Qt::Key_F5));
+    // Not on the toolbar and without a shortcut: it changes dates, never by accident
+    aSetDates_ = new QAction(tr_("Set dates from EXIF..."), this);
+    aSetDates_->setToolTip(tr_("Give the files the EXIF shooting date as their modification date"));
+    connect(aSetDates_, &QAction::triggered, this, [this] { setDatesFromExif(); });
 
     // view filter only: files hidden by "Changed only" stay in the list and are processed as usual
     aChangedOnly_ = makeAction(tr_("Changed only"), tr_("Show only the files whose name changes in the preview"), TbChangedOnly);
@@ -631,6 +641,8 @@ void MainWindow::createPages() {
         m.addAction(aFilter_);
         m.addAction(aPreview_);
         m.addAction(tr_("Export preview..."), this, [this] { exportPreview(); });
+        m.addSeparator();
+        m.addAction(aSetDates_);
         m.exec(fileView_->viewport()->mapToGlobal(p));
     });
 

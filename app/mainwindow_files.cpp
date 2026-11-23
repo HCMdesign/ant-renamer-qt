@@ -329,6 +329,84 @@ void MainWindow::insertFileAt(const QString& path, int row) {
     }
 }
 
+// "Set dates from EXIF": the modification date of each file becomes its EXIF shooting date. Never automatic: a table shows the
+// old and the new date of every file, with the safeguards written out, and nothing happens before the button is pressed.
+// The run goes through the worker (log, history, undo like a renaming).
+void MainWindow::setDatesFromExif() {
+    if (worker_) {
+        return;
+    }
+    if (files_.size() == 0) {
+        QMessageBox::information(this, tr_("Set the dates from EXIF"), tr_("No file: add files first."));
+        return;
+    }
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr_("Set the dates from EXIF"));
+    auto* lay = new QVBoxLayout(&dlg);
+    auto* intro = new QLabel(
+        tr_("The modification date of each file below will become the shooting date written in its EXIF data. Only the date "
+            "kept by the file system changes: the content of the file, its EXIF data and its tags are not touched. A file with "
+            "no EXIF shooting date is left alone.\n\nThe modification date is not a proof of authenticity. For originals that "
+            "must stay evidence, work on copies (option \"Copy instead of rename\"). This can be undone from the history."));
+    intro->setWordWrap(true);
+    lay->addWidget(intro);
+    auto* tree = new QTreeWidget;
+    tree->setRootIsDecorated(false);
+    tree->setHeaderLabels({tr_("File"), tr_("Modification date"), tr_("EXIF shooting date"), tr_("Result")});
+    lay->addWidget(tree, 1);
+    QApplication::setOverrideCursor(Qt::WaitCursor);  // the EXIF of every picture is read
+    int changes = 0;
+    const QString fmt = u"yyyy-MM-dd HH:mm:ss"_s;
+    const std::vector<ren::DatePlan> plans = ren::planDates(files_);
+    for (size_t i = 0; i < files_.size(); ++i) {
+        const File& f = files_.at(i);
+        const ren::DatePlan& p = plans[i];
+        QString result;
+        switch (p.kind) {
+        case ren::DatePlan::Kind::Change:
+            result = p.sidecars.isEmpty() ? tr_("will be changed") : tr_("will be changed, with %1 sidecar file(s)").arg(p.sidecars.size());
+            ++changes;
+            break;
+        case ren::DatePlan::Kind::Sidecar:
+            result = tr_("follows its picture");
+            break;
+        case ren::DatePlan::Kind::Same:
+            result = tr_("already right");
+            break;
+        case ren::DatePlan::Kind::NoDate:
+            result = tr_("no EXIF shooting date");
+            break;
+        case ren::DatePlan::Kind::Skipped:
+            result = f.isFolder() ? tr_("a folder has no EXIF date") : tr_("hidden file");
+            break;
+        }
+        auto* it = new QTreeWidgetItem(tree, {native(f.filePath()), p.current.isValid() ? p.current.toString(fmt) : QString(),
+                                              p.shot.isValid() ? p.shot.toString(fmt) : QString(), result});
+        if (p.kind != ren::DatePlan::Kind::Change) {
+            for (int c = 0; c < 4; ++c) {
+                it->setForeground(c, palette().color(QPalette::Disabled, QPalette::Text));
+            }
+        }
+    }
+    QApplication::restoreOverrideCursor();
+    for (int c = 1; c < 4; ++c) {
+        tree->resizeColumnToContents(c);
+    }
+    tree->setColumnWidth(0, 360);
+    lay->addWidget(new QLabel(tr_("%1 file(s) will get a new modification date.").arg(changes)));
+    auto* box = new QDialogButtonBox(QDialogButtonBox::Cancel);
+    QPushButton* go = box->addButton(tr_("Set the dates"), QDialogButtonBox::AcceptRole);
+    go->setEnabled(changes > 0);
+    box->button(QDialogButtonBox::Cancel)->setDefault(true);  // Enter does not change dates by reflex
+    connect(box, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(box, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    lay->addWidget(box);
+    dlg.resize(820, 460);
+    if (dlg.exec() == QDialog::Accepted) {
+        run(Op::SetDates);
+    }
+}
+
 // Keeps (or removes) the files that match a filter on a date, a time of the day or the size. The files are only taken out of
 // the list: nothing is touched on the disk. The dialog shows the last criteria again and, when the last filter took files
 // out, offers to put them back first, so that a filter that left nothing can be corrected. "Clear the filter" (or no

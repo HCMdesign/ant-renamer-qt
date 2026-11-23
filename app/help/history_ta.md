@@ -2,6 +2,9 @@
 
 Ant Renamer Qt, 3.x versions (C++/Qt 6 port by Frédéric Biron, developed in parallel with the original):
 
+- 3.3.0-beta.2 (23/11/2026)
+  - New: Set dates from EXIF (right-click menu of the list, command line `--set-dates-from-exif`): the modification date of the files becomes their EXIF shooting date. A table shows the old and the new date and nothing changes before you confirm; the content of the files is never touched; the sidecar files (.xmp, .dop, RAW) follow their picture; the history can undo it. The modification date is not a proof of authenticity: for originals that must stay evidence, work on copies.
+  - Fix: the .deb package points to the GitHub repository as its home page, not to the site of the original program.
 - 3.3.0-beta.1 (22/11/2026)
   - New: Filter files (toolbar button and F4, right-click menu): keeps or removes the files of the list that match a period, a time of the day and a size, on the modification date, the creation date or the EXIF shooting date; the filter can be corrected and cleared, and a hidden-files count is shown while it is on.
   - Fix: undoing a pass made with "Copy instead of rename" deletes the copies that have not been changed. Fix: a silent run (-q) and an open window no longer erase each other's undo history.

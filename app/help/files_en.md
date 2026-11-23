@@ -40,3 +40,11 @@ The number of files of the list is displayed at the bottom of the window.
 The date looked at is chosen above them: the modification date, the creation date (not kept by every Linux file system: a file without one never matches) or the shooting date (the EXIF date of a picture, else its modification date). The size limits are for files; a folder is judged on its dates.
 
 The files are only taken out of the list: nothing is touched on the disk, and you can add them again. To correct a filter, press the button again: the last criteria are shown, and "Put back the files removed by the previous filter first" (ticked) restores the files the filter took out (each one right after the file that was before it, at the end if that file is gone) before the new filter is applied. While a filter hides files, the count at the bottom of the window turns orange ("12 files, 340 hidden by the filter") and the Filter button stays pressed. The "Clear the filter" button (or no criterion ticked, with the files put back) gives back every file that was taken out and filters nothing. "Remove all" forgets them.
+
+### Set dates from EXIF
+
+*(Ant Renamer Qt)* The right-click menu of the list has "Set dates from EXIF...". It gives the files, as their modification date, the shooting date written in their EXIF data (or in their XMP sidecar): useful for photos that were copied and whose date was overwritten. It is never automatic: a table shows the old and the new date of every file, and nothing changes before you press "Set the dates".
+
+Only the modification date kept by the file system changes. The content of the file, its EXIF data and its tags are not touched, and no date is typed by hand or invented: a file with no EXIF shooting date, a folder and a hidden file are left alone, and the log says why. The sidecar files (`.xmp`, `.dop`, the RAW of a JPEG...) follow their picture like in a renaming: they get the same date. The log keeps the old and the new date, and the history (Undo) puts the old date back.
+
+**The modification date is not a proof of authenticity.** For originals that must stay evidence, work on copies (option "Copy instead of rename"). On the command line, the parameter `--set-dates-from-exif` replaces the renaming.

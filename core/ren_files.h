@@ -56,6 +56,11 @@ struct Move {
     // true: `to` is a copy of `from` made by "Copy instead of rename" (the original stays where it is). The undo deletes the
     // copy, if it is unchanged (same size and date as right after the copy), instead of moving it back.
     bool copy = false;
+    // true: nothing moved, the modification date of the file `to` (= `from`) was changed ("Set the dates from EXIF"). `mtime` is
+    // the new date (the fingerprint the undo checks), `oldMtime` the one to put back.
+    bool date = false;
+    qint64 oldMtime = 0;
+    std::vector<std::pair<QString, qint64>> sidecarDates = {};  // date moves: (sidecar, its old modification time in ms) that followed
 };
 
 // One run of the batch ("Go"): everything it moved, in order.
@@ -143,6 +148,14 @@ public:
     bool undoMove(const QString& from, const std::vector<std::pair<QString, QString>>& sidecars);
     // Deletes the copy this entry stands for and points the entry back to the original `from`.
     bool undoCopy(const QString& from);
+    // Gives the file the modification date `t` (the content is not touched), and the same date to its `sidecars` (a sidecar
+    // that cannot be changed is only mentioned in description(), like for a renaming), and records it in the journal. `self`
+    // false: the file already has the date, only the sidecars are changed. False, with the reason in description(), if the
+    // system refuses the file.
+    bool setModifiedDate(const QDateTime& t, bool self = true, const QStringList& sidecars = {});
+    // Puts back the modification date `oldMtime` (ms) of the file and the dates of its sidecars after a move recorded with
+    // Move::date.
+    bool undoDate(qint64 oldMtime, const std::vector<std::pair<QString, qint64>>& sidecarDates = {});
     void initBeforeJob() {
         preview.clear();
         copyDone_ = false;
@@ -203,6 +216,10 @@ public:
     // move to its first. Stops at the first pass that cannot be completely undone (the moves that failed stay in the
     // journal). Returns the passes fully undone.
     int undoPasses(int count, const std::function<void(File&)>& progress = {}, int session = -1);
+    // "Set the dates from EXIF": the modification date of each file becomes its EXIF shooting date (see planDate). A file
+    // without such a date, a folder, a hidden file (Options::skipHidden) and a file that already has the right date are left
+    // alone, each with a line of explanation. One pass of the journal, so the history can undo it. Returns the files changed.
+    int setDatesFromExif(const std::function<void(File&)>& progress = {});
 
 private:
     void wire(File& f);
@@ -211,6 +228,24 @@ private:
     std::unordered_map<quint64, File*> byId_;
     Journal* journal_ = nullptr;
 };
+
+// The EXIF (or XMP) shooting date of a picture, local time; nullopt if the file has none. Only the DateTimeOriginal tag counts:
+// DateTime is the date of the last edit, not of the shot.
+std::optional<QDateTime> shootingDate(const QString& path);
+
+// What "Set the dates from EXIF" would do to one file, without touching it.
+struct DatePlan {
+    // Skipped: a folder, or a hidden file while Options::skipHidden is on. Sidecar (planDates only): a sidecar of a picture
+    // that is in the list too, the picture takes it along (as for a renaming, Options::renameSidecar).
+    enum class Kind { Change, Same, NoDate, Skipped, Sidecar };
+    Kind kind = Kind::Skipped;
+    QDateTime current, shot;  // the modification date now, and the shooting date (valid for Change and Same)
+    bool self = false;        // the file's own date differs (Change); else only its sidecars do
+    QStringList sidecars;     // the existing sidecars whose date differs from the shooting date: they follow the picture
+};
+DatePlan planDate(const File& f);
+// The plan of every file of the list, in order: planDate, except for the sidecars of pictures that are in the list.
+std::vector<DatePlan> planDates(FileList& list);
 
 // Which files of the list to keep (or to remove): by one of their dates (a period, and/or a time of the day) and by size.
 // Every criterion that is set must hold. A folder is judged on its dates only; the size limits are for files.

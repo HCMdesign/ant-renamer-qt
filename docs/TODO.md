@@ -9,10 +9,11 @@ These are ideas, not promises: some may never be done, and nothing here is froze
 - The sources of the requests: the "Comments" forum of the original program, forum.antp.be (120 topics read on 2026-10-22), then the issues and discussions of this project.
 - Nothing is written for an idea that nobody needs: an idea waits for a real request or a real problem.
 
-## Where we are (2026-11-22)
+## Where we are (2026-11-23)
 
 - **3.2.0** published on 2026-11-20: the "Use EPUB info" action, no more empty-looking names (EPUB, MP3, EXIF), the Explorer menu asking what to add, files left alone shown in orange in the preview, the update notice showing the release notes, help and credits cleaned up, links to the online help, a new Flatpak manifest built with `cmake --install`.
 - **Distribution**: the application is on Flathub since 2026-11-22 (updates by pull request on `flathub/fr.morfredus.AntRenamerQt`, with `publish-antrenamer-flatpak.sh`), in AppImageHub and Portable Linux Apps; a winget pull request is waiting for a moderator.
+- **3.3.0-beta.1** published on 2026-11-22 (Filter files, undo of copies, shared history), tried on Ubuntu, Fedora and Windows 11 and 10. **3.3.0-beta.2** is prepared on `dev/3.3.0` (Set dates from EXIF, the .deb home page).
 - The branch `dev/3.3.0` is open; it also carries the corrections that were planned for a 3.2.1.
 
 ## Next versions, in order
@@ -26,12 +27,12 @@ No separate 3.2.1: the corrections wait for 3.3 so that one release carries them
   - Done in `dev/3.3.0`: a `-q` run and an open window no longer overwrite each other's history (each takes in the passes of the other).
   - Done in `dev/3.3.0`: the undo deletes the files copied with "Copy instead of rename" if they are unchanged (same size and date as right after the copy), and keeps them with a message otherwise.
 - **Release loose ends**: check the first update of the Flathub repository with `publish-antrenamer-flatpak.sh` (a real update, not only a dry run). The release line of the version must be in the MetaInfo before the tag is made (3.2.0 was missing, so Flathub still shows 3.1.1; it is listed in `dev/3.3.0`). Done: the "EPUB is in the beta" mention is out of the online help, and the CI economy (no build on a push to `main`, the Linux release script waiting for the running CI) is tried.
-- **AppImage**: the 3.3.0-beta.1 AppImage was run on Fedora with the expected behaviour (2026-11-23). Still to do: open the AppImage (`--appimage-extract`) and check `usr/share/metainfo`, add `appstreamcli validate` to the CI, check the screenshots on the AppImageHub page.
+- **AppImage**: the 3.3.0-beta.1 AppImage was run on Fedora and Ubuntu with the expected behaviour (2026-11-23). The metainfo of the AppImage (`--appimage-extract`, `usr/share/metainfo/fr.morfredus.AntRenamerQt.metainfo.xml`) is there and `appstreamcli validate` passes (2026-11-23, Ubuntu); `--pedantic` only notes the capital letters of the component ID, which stays as it is since it is the Flathub ID. `appstreamcli validate` is in the CI (Linux job, 2026-11-23). Still to do: check the screenshots on the AppImageHub page.
 - **Screenshots**: remake them if the interface changed.
 
 **The dates of the files**
 
-- **Bring the modification date of a file back in line with its EXIF shooting date** (asked many times, "on the to-do list" of the original since 2005). Typical case: photos that were copied and whose file system date was overwritten. Only the modification date is concerned: it is changed the same way on Windows and on Linux. The creation date is excluded: it cannot be changed on Linux with the standard tools (to check), and a plain copy resets it. Dates read from a file name would come later, only on request.
+- **Bring the modification date of a file back in line with its EXIF shooting date** (done in `dev/3.3.0`, right-click "Set dates from EXIF...", `--set-dates-from-exif`; asked many times, "on the to-do list" of the original since 2005). Typical case: photos that were copied and whose file system date was overwritten. Only the modification date is concerned: it is changed the same way on Windows and on Linux. The creation date is excluded: it cannot be changed on Linux with the standard tools (to check), and a plain copy resets it. Dates read from a file name would come later, only on request.
   **Deliberate choice, with safeguards** (the originals of photos must not be falsified by accident, nor easily):
   - The date comes from the file itself (EXIF). No date typed by hand and no invented date: a file without an EXIF date is left alone and the log says so.
   - The program changes only the date of the file system, never the content of the file: the EXIF shooting date and the tags are not touched.

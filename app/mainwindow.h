@@ -180,6 +180,7 @@ private:
     void updateSamplePreview();
     void run(ren::Op op, int undoCount = 1, int undoSession = -1);
     void showHistory();
+    void setDatesFromExif();  // asks first (a table of the old and the new dates), then runs Op::SetDates
     void updateUndoState();
     void saveHistory();
     void refreshHistory();  // takes in the passes a `-q` run wrote to the history file while this window was open
@@ -242,7 +243,7 @@ private:
 
     QAction *aGo_, *aStop_, *aUndo_, *aHistory_, *aOnTop_, *aTheme_, *aOptions_, *aHelp_, *aAbout_, *aExit_;
     QAction* aTab_[3];
-    QAction *aFilter_, *aAddFiles_, *aAddFolders_, *aRemoveSel_, *aRemoveAll_, *aRemoveDead_, *aPreview_, *aChangedOnly_, *aShowHidden_;
+    QAction *aSetDates_, *aFilter_, *aAddFiles_, *aAddFolders_, *aRemoveSel_, *aRemoveAll_, *aRemoveDead_, *aPreview_, *aChangedOnly_, *aShowHidden_;
     QAction *aBatchAdd_, *aBatchEdit_, *aBatchRemoveSel_, *aBatchClear_, *aBatchOpen_, *aBatchSave_;
     QAction *aLogFilter_, *aLogOk_, *aLogError_, *aLogNot_, *aLogClear_, *aLogSave_, *aLogCopy_;
     QAction *aUp_, *aDown_, *aTop_, *aBottom_;

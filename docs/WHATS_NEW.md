@@ -4,7 +4,14 @@
 For the technical detail: [CHANGELOG](../CHANGELOG.md). For the road travelled since the original program (what is kept,
 the deliberate differences, what was added): [PRESENTATION.md](PRESENTATION.md).
 
-Current version: **3.3.0-beta.1**.
+Current version: **3.3.0-beta.2**.
+
+## 3.3.0-beta.2
+
+| What is new | Since |
+|---|---|
+| **Set dates from EXIF**: right-click in the list, "Set dates from EXIF...", gives the files their EXIF shooting date as modification date (photos that were copied and whose date was overwritten). A table shows the old and the new date first, nothing changes before you confirm, the content of the files is never touched, and the history can undo it. Command line: `--set-dates-from-exif`. | 3.3.0-beta.2 |
+| **.deb package**: its home page is the GitHub repository (the software center showed the site of the original program as the developer's website). | 3.3.0-beta.2 |
 
 ## 3.3.0-beta.1
 

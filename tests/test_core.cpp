@@ -51,6 +51,7 @@ template <class A, class Fn> static QString prev(const QString& name, Fn setup, 
 #include "robust_check.h"
 #include "duplicates_check.h"
 #include "filter_check.h"
+#include "date_check.h"
 
 int main(int argc, char** argv) {
     QCoreApplication app(argc, argv);
@@ -734,6 +735,7 @@ int main(int argc, char** argv) {
 
     duplicatesCheck();
     filterCheck();
+    dateCheck();
 
     std::printf(failures ? "%d FAILURE(S)\n" : "all core checks passed\n", failures);
     return failures ? 1 : 0;
