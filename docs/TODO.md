@@ -57,6 +57,7 @@ Today only the hidden and system files are filtered.
 - **Enumeration by letters** (`AA`, `AB`...).
 - **"Copy instead of rename" per action** of the batch (today one global option).
 - **Case change**: capital letter at a given position.
+- **Random names, more options**: today a mask and three randomisation methods only. Add the exact character sets to draw from (digits, lower/upper case, custom list, excluded look-alike characters such as `0/O`, `1/l`) and prefix/suffix rules. A fair remark received from a reader.
 
 ### 3.6: photo metadata, more of it
 

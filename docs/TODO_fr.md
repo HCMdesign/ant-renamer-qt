@@ -56,7 +56,7 @@ Aujourd'hui seuls les fichiers cachés et système sont filtrés.
 - **Réparer les noms mal encodés** (UTF-8 lu comme ISO-8859-1 après un aller-retour Linux/Windows), en option au lieu d'une grille de remplacement.
 - **Énumération par lettres** (`AA`, `AB`...).
 - **« Copier au lieu de renommer » par action** du lot (aujourd'hui une option globale).
-- **Changement de casse** : majuscule à une position donnée.
+- **Noms aléatoires, plus d'options** : aujourd'hui un masque et trois méthodes de tirage seulement. Ajouter les jeux de caractères précis où tirer (chiffres, minuscules/majuscules, liste personnalisée, exclusion des caractères qui se ressemblent comme `0/O`, `1/l`) et des règles de préfixe/suffixe. Remarque fondée reçue d'un lecteur.
 
 ### 3.6 : métadonnées des photos, davantage
 
