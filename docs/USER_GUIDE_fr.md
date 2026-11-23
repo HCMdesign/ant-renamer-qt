@@ -13,7 +13,7 @@ Le travail se fait en trois étapes, une page chacune :
 
 L'aperçu en bas de la page Opérations montre en direct le nom actuel et le futur nom du fichier sélectionné. La colonne **Aperçu** de la liste des Fichiers (F5) le montre pour toute la liste.
 
-Le programme ne modifie que les **noms** (ou copie les fichiers sous un nouveau nom) ; il ne touche jamais au contenu ni aux dates des fichiers. Il gère les noms Unicode (grec, japonais, cyrillique...), les fichiers et les dossiers.
+Le programme ne modifie que les **noms** (ou copie les fichiers sous un nouveau nom) ; il ne touche jamais au contenu des fichiers, et la seule date qu'il change, quand vous le demandez, est la date de modification (*Mettre les dates d'après l'EXIF...*, §3). Il gère les noms Unicode (grec, japonais, cyrillique...), les fichiers et les dossiers.
 
 ## 2. Raccourcis clavier
 
@@ -120,7 +120,7 @@ Le panneau **Contenu du job** liste les opérations planifiées (case à cocher 
 - **Historique** (Maj+F12, horloge) : liste les passes, la plus récente en premier, regroupées par **session** (une session = un lancement du programme : le titre donne sa date et son heure), avec la date et l'heure, le nombre de déplacements et l'opération de chaque passe. *Annuler jusqu'à cette passe* annule la passe choisie et toutes celles faites après **dans la même session** ; une passe au milieu d'une session ne peut pas être annulée seule. Les autres sessions ne sont pas touchées : vous pouvez annuler la session d'hier en gardant celle d'aujourd'hui. Si la session d'aujourd'hui a renommé encore les mêmes fichiers, l'annulation de l'ancienne s'arrête (fichier introuvable ou modifié). Si un fichier a été déplacé, supprimé ou modifié en dehors du programme (taille ou date différentes de celles de juste après le renommage), l'annulation s'arrête là et la passe reste dans la liste ; *Effacer l'historique* oublie toutes les passes si l'une d'elles bloque les autres. Les 50 dernières passes sont gardées, **même après la fermeture du programme** : vous pouvez annuler le lendemain. L'historique est enregistré à côté du fichier de réglages (le dossier du programme en mode portable, le profil de l'utilisateur sinon : `antrenamer-qt-history.json`). Dans *Options > Fichiers & Dossiers*, le bouton Annuler peut ouvrir l'historique au lieu d'annuler la dernière passe.
 - **Avant-plan** (F11) : garde la fenêtre au-dessus des autres.
 - **Clair / sombre** (cercle à moitié plein) : change aussitôt de thème ; *Options > Affichage > Thème* propose aussi « Suivre le système » (par défaut).
-- **Copier plutôt que renommer** (Options > Traitement) : les originaux restent, les copies portent les nouveaux noms.
+- **Copier plutôt que renommer** (Options > Traitement) : les originaux restent, les copies portent les nouveaux noms ; l'annulation supprime une copie si elle n'a pas été modifiée depuis (sinon elle est gardée et le journal le dit).
 
 ## 6. Masques de formatage (opérations 4, 7, 8, 10, 14, 15)
 
@@ -205,7 +205,7 @@ Même moteur, autre présentation, choisie dans Options > Affichage. C'est celle
 | Menu contextuel de l'Explorateur | oui (Windows 11 : *Afficher plus d'options*) | non (utiliser le glisser-déposer ou la ligne de commande) |
 | Réglages | `%APPDATA%\AntRenamerQt` | `~/.local/share/AntRenamerQt` |
 | Nom du programme | `antrenamer-qt.exe` | `antrenamer-qt` |
-| Paquets | installeur et zip portable | `.deb` (amd64, arm64), AppImage |
+| Paquets | installeur et zip portable | `.deb` (amd64, arm64), AppImage, Flatpak (Flathub) |
 
 ## 14. Limites connues
 
@@ -213,4 +213,6 @@ Même moteur, autre présentation, choisie dans Options > Affichage. C'est celle
 - Tags audio : ID3 seulement (MP3) ; FLAC, OGG, M4A ne sont pas lus.
 - Annuler : passe après passe (les 50 dernières, gardées à la fermeture du programme), dans une session uniquement à partir de sa dernière passe ; les copies faites avec « Copier au lieu de renommer » sont supprimées par l'annulation si elles n'ont pas été modifiées depuis (les originaux ne sont jamais touchés).
 - Le menu contextuel court de Windows 11 n'est pas pris en charge (utiliser « Afficher plus d'options »).
+- Mettre les dates d'après l'EXIF : seule la date de modification est changée (la date de création ne peut pas être changée de la même façon sous Linux), d'après la balise EXIF `DateTimeOriginal` ou le fichier XMP associé ; un fichier qui n'en a pas est laissé tel quel.
+- Flatpak : le programme ne voit que les dossiers auxquels on lui donne accès (la fenêtre « Ajouter des dossiers » utilise le sélecteur de dossiers du système) et n'a pas d'accès au réseau, donc la recherche de nouvelle version n'est pas proposée ; la mise à jour vient de Flathub.
 - L'aide en croate et en tamoul affiche l'anglais pour les pages écrites pour Ant Renamer Qt.

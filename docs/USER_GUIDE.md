@@ -13,7 +13,7 @@ The work is done in three steps, one page each:
 
 The preview at the bottom of the Actions page shows the current and future name of the selected file, live. The **Preview** column of the Files list (F5) shows it for the whole list.
 
-The program only changes **names** (or copies the files under a new name); it never modifies the contents or the dates of the files. It handles Unicode names (Greek, Japanese, Cyrillic...), files and folders.
+The program only changes **names** (or copies the files under a new name); it never modifies the contents of the files, and the only date it changes, when you ask for it, is the modification date (*Set dates from EXIF...*, §3). It handles Unicode names (Greek, Japanese, Cyrillic...), files and folders.
 
 ## 2. Keyboard shortcuts
 
@@ -120,7 +120,7 @@ The **Batch contents** panel lists the planned actions (tick box to show/hide it
 - **History** (Shift+F12, clock): lists the passes, newest first, grouped by **session** (one session = one run of the program: the heading gives its date and time), with the date and time, number of moves and action of each pass. *Undo up to this pass* undoes the chosen pass and all those made after it **in the same session**; a pass in the middle of a session cannot be undone alone. The other sessions are not touched, so you can undo yesterday's session while keeping today's. If today's session has renamed the same files again, the undo of the older one stops (file not found or changed). If a file was moved, deleted or changed outside the program (another size or date than right after the renaming), the undo stops there and the pass stays in the list; *Clear the history* forgets all the passes if one of them blocks the others. The last 50 passes are kept, **also after the program is closed**: you can undo the next day. The history is saved next to the settings file (the program folder in portable mode, the user profile otherwise: `antrenamer-qt-history.json`). In *Options > Files & Folders* the Undo button can open the history instead of undoing the last pass.
 - **Always on top** (F11): keeps the window above the others.
 - **Light / dark** (half-filled circle): switches the theme at once; *Options > Display > Theme* also offers "Follow the system" (default).
-- **Copy instead of rename** (Options > Processing): the originals stay, the copies carry the new names.
+- **Copy instead of rename** (Options > Processing): the originals stay, the copies carry the new names; undo deletes a copy if it has not been changed since (otherwise it is kept and the log says so).
 
 ## 6. Format masks (actions 4, 7, 8, 10, 14, 15)
 
@@ -205,12 +205,14 @@ Same engine, other presentation, set in Options > Display. It is the default of 
 | Explorer context menu | yes (Windows 11: *Show more options*) | no (use drag and drop or the command line) |
 | Settings | `%APPDATA%\AntRenamerQt` | `~/.local/share/AntRenamerQt` |
 | Program name | `antrenamer-qt.exe` | `antrenamer-qt` |
-| Packages | installer and portable zip | `.deb` (amd64, arm64), AppImage |
+| Packages | installer and portable zip | `.deb` (amd64, arm64), AppImage, Flatpak (Flathub) |
 
 ## 14. Known limits
 
 - EXIF: 36 tags only, MakerNote not decoded; IPTC read only in JPEG.
 - Audio tags: ID3 only (MP3); FLAC, OGG, M4A are not read.
 - Undo: pass after pass (the last 50, kept when the program is closed), inside a session only from its last pass; the copies made with "Copy instead of rename" are deleted by the undo if they have not been changed since (the originals are never touched).
+- Set dates from EXIF: only the modification date is set (the creation date cannot be changed the same way on Linux), from the EXIF `DateTimeOriginal` tag or the XMP sidecar; a file without it is left alone.
 - The short Windows 11 context menu is not supported (use "Show more options").
+- Flatpak: the program sees only the folders it is given access to (the "Add folders" window uses the system folder picker) and has no network access, so the new-version check is not offered; the update comes from Flathub.
 - The help in Croatian and Tamil shows English for the pages written for Ant Renamer Qt.

@@ -13,7 +13,7 @@ Ce sont des idées, pas des promesses : certaines ne seront peut-être jamais fa
 
 - **3.2.0** publiée le 20/11/2026 : l'opération « Infos EPUB », plus de noms qui ont l'air vides (EPUB, MP3, EXIF), le menu de l'Explorateur qui demande quoi ajouter, les fichiers laissés tels quels affichés en orange dans l'aperçu, l'annonce de mise à jour qui montre les notes de version, l'aide et les crédits nettoyés, des liens vers l'aide en ligne, un nouveau manifeste Flatpak construit avec `cmake --install`.
 - **Diffusion** : l'application est sur Flathub depuis le 22/11/2026 (mises à jour par pull request sur `flathub/fr.morfredus.AntRenamerQt`, avec `publish-antrenamer-flatpak.sh`), dans AppImageHub et Portable Linux Apps ; une pull request winget attend un modérateur.
-- **3.3.0-beta.1** publiée le 22/11/2026 (Filtrer les fichiers, annulation des copies, historique partagé), essayée sous Ubuntu, Fedora et Windows 11 et 10. **3.3.0-beta.2** est préparée sur `dev/3.3.0` (Mettre les dates d'après l'EXIF, page d'accueil du .deb).
+- **3.3.0-beta.1** publiée le 22/11/2026 (Filtrer les fichiers, annulation des copies, historique partagé), essayée sous Ubuntu, Fedora et Windows 11 et 10. **3.3.0-beta.2** publiée le 23/11/2026 en préversion depuis `dev/3.3.0` (Mettre les dates d'après l'EXIF avec les fichiers associés qui suivent, `--set-dates-from-exif`, page d'accueil du .deb) ; la CI de la branche (compilation, tests, clang-tidy, `appstreamcli validate`, paquets) était verte sur le commit publié. Pas encore essayé à la main : l'annulation des dates sur de vrais fichiers, la fonction sous Linux, les paquets de la 3.3.0-beta.2 installés.
 - La branche `dev/3.3.0` est ouverte ; elle porte aussi les corrections prévues pour une 3.2.1.
 
 ## Versions à venir, dans l'ordre
@@ -28,7 +28,7 @@ Pas de 3.2.1 à part : les corrections attendent la 3.3, pour qu'une seule versi
   - Fait dans `dev/3.3.0` : l'annulation supprime les fichiers copiés avec « Copier au lieu de renommer » s'ils sont inchangés (même taille et même date qu'au moment de la copie), et les garde avec un message sinon.
 - **Points de release** : vérifier la première mise à jour du dépôt Flathub avec `publish-antrenamer-flatpak.sh` (une vraie mise à jour, pas seulement un essai à blanc). La ligne de version doit être dans le MetaInfo avant de poser le tag (la 3.2.0 manquait, Flathub affiche donc encore la 3.1.1 ; elle est listée dans `dev/3.3.0`). Fait : la mention « EPUB est dans la bêta » est retirée de l'aide en ligne, et l'économie de CI (pas de build sur un push vers `main`, le script de release Linux qui attend la CI en cours) est essayée.
 - **AppImage** : l'AppImage de la 3.3.0-beta.1 a été lancée sous Fedora et Ubuntu, comportement attendu (23/11/2026). Le metainfo de l'AppImage (`--appimage-extract`, `usr/share/metainfo/fr.morfredus.AntRenamerQt.metainfo.xml`) est présent et `appstreamcli validate` réussit (23/11/2026, Ubuntu) ; `--pedantic` note seulement les majuscules de l'identifiant du composant, qui reste tel quel puisque c'est l'identifiant Flathub. `appstreamcli validate` est dans la CI (job Linux, 23/11/2026). Reste à faire : vérifier les captures sur la page AppImageHub.
-- **Captures d'écran** : à refaire si l'interface a changé.
+- **Captures d'écran** : à refaire si l'interface a changé (les boîtes Filtrer les fichiers et Mettre les dates d'après l'EXIF sont nouvelles).
 
 **Les dates des fichiers**
 

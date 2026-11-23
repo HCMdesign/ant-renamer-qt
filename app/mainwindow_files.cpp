@@ -392,7 +392,7 @@ void MainWindow::setDatesFromExif() {
     for (int c = 1; c < 4; ++c) {
         tree->resizeColumnToContents(c);
     }
-    tree->setColumnWidth(0, 360);
+    tree->setColumnWidth(0, 330);
     lay->addWidget(new QLabel(tr_("%1 file(s) will get a new modification date.").arg(changes)));
     auto* box = new QDialogButtonBox(QDialogButtonBox::Cancel);
     QPushButton* go = box->addButton(tr_("Set the dates"), QDialogButtonBox::AcceptRole);
@@ -401,7 +401,7 @@ void MainWindow::setDatesFromExif() {
     connect(box, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
     connect(box, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
     lay->addWidget(box);
-    dlg.resize(820, 460);
+    dlg.resize(1000, 480);  // wide enough for the longest result ("will be changed, with 2 sidecar file(s)") in French too
     if (dlg.exec() == QDialog::Accepted) {
         run(Op::SetDates);
     }
