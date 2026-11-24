@@ -1,10 +1,18 @@
-# HCM-only workflow (not upstream). v1.0.0, 2026-11-24.
+# HCM-only workflow (not upstream). v1.1.0, 2026-11-24.
+#   1.1.0: key isolated from build code (four jobs); secrets moved to the hcm-codesign environment.
+#   1.0.0: first version (single job).
+#
 # Builds the Windows packages from an hcm/v*-signed branch (cut from an upstream release tag) and
 # Authenticode-signs antrenamer-qt.exe and the setup.exe with the HCM Development Code Signing
 # certificate (issued offline by the HCM step-ca intermediate; root trusted on HCM devices via GPO).
 # The Inno Setup uninstaller and the Qt/MinGW DLLs are left unsigned (third-party code).
 #
-# Secrets: CERTIFICATE (base64 PFX incl. intermediate), CERTIFICATE_PASS. Upstream's build.yml is untouched.
+# Trust model: the certificate is valid on every HCM device, so the key never shares a job with repo
+# code or build tools. build and package (repo code, MSYS2, Inno Setup) have no secrets; sign-exe and
+# sign-setup only download artifacts and run signtool, with no checkout. Secrets CERTIFICATE (base64 PFX
+# incl. intermediate) and CERTIFICATE_PASS live in the hcm-codesign environment, which releases them only
+# to hcm/v*-signed branches; a repository ruleset lets only admins create or push those branches.
+# Upstream's build.yml is untouched.
 name: HCM signed Windows build
 
 on:
@@ -16,10 +24,10 @@ permissions:
   contents: read
 
 jobs:
-  windows-signed:
-    name: Windows (build, test, sign)
+  build:
+    name: Build and test (no secrets)
     runs-on: windows-2022
-    timeout-minutes: 40
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -38,13 +46,6 @@ jobs:
             mingw-w64-ucrt-x86_64-qt6-base
             mingw-w64-ucrt-x86_64-qt6-tools
 
-      - name: Inno Setup
-        shell: pwsh
-        run: |
-          if (-not (Get-Command ISCC.exe -ErrorAction SilentlyContinue) -and -not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
-            choco install innosetup --no-progress -y
-          }
-
       - name: Build
         shell: pwsh
         env:
@@ -58,47 +59,127 @@ jobs:
         timeout-minutes: 5
         run: ctest --test-dir build-mingw -R core --output-on-failure
 
-      - name: Recreate code signing certificate
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: app-unsigned
+          retention-days: 1
+          path: |
+            build-mingw/app
+            !build-mingw/app/CMakeFiles
+            !build-mingw/app/*_autogen
+
+  sign-exe:
+    name: Sign the program (no checkout)
+    needs: build
+    if: startsWith(github.ref, 'refs/heads/hcm/v') && endsWith(github.ref, '-signed')
+    runs-on: windows-2022
+    timeout-minutes: 10
+    environment: hcm-codesign
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: app-unsigned
+          path: app
+
+      - name: Sign antrenamer-qt.exe
         shell: pwsh
         env:
           CERT: ${{ secrets.CERTIFICATE }}
-        run: |
-          if (-not $env:CERT) { Write-Error 'CERTIFICATE secret is missing'; exit 1 }
-          [IO.File]::WriteAllBytes((Join-Path $env:RUNNER_TEMP 'hcm-codesign.pfx'), [Convert]::FromBase64String($env:CERT))
-
-      - name: Sign the program
-        shell: pwsh
-        env:
           CERT_PASS: ${{ secrets.CERTIFICATE_PASS }}
         run: |
-          $signtool = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Recurse -Filter signtool.exe |
-            Where-Object { $_.FullName -like '*x64*' } | Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
-          Write-Host "signtool: $signtool"
-          & $signtool sign /f (Join-Path $env:RUNNER_TEMP 'hcm-codesign.pfx') /p $env:CERT_PASS.Trim() /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 build-mingw\app\antrenamer-qt.exe
-          if ($LASTEXITCODE -ne 0) { exit 1 }
+          $pfx = Join-Path $env:RUNNER_TEMP 'hcm-codesign.pfx'
+          try {
+            if (-not $env:CERT) { Write-Error 'CERTIFICATE secret is missing'; exit 1 }
+            [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:CERT))
+            $signtool = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Recurse -Filter signtool.exe |
+              Where-Object { $_.FullName -like '*x64*' } | Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
+            & $signtool sign /f $pfx /p $env:CERT_PASS.Trim() /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 app\antrenamer-qt.exe
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+          } finally {
+            Remove-Item $pfx -Force -ErrorAction SilentlyContinue
+          }
 
-      - name: Packages (portable zip + installer, from the signed exe)
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: exe-signed
+          retention-days: 1
+          path: app/antrenamer-qt.exe
+
+  package:
+    name: Package from the signed program (no secrets)
+    needs: sign-exe
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: app-unsigned
+          path: build-mingw/app
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: exe-signed
+          path: build-mingw/app
+
+      - name: Inno Setup
         shell: pwsh
         run: |
+          if (-not (Get-Command ISCC.exe -ErrorAction SilentlyContinue) -and -not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup --no-progress -y
+          }
+
+      - name: Packages (portable zip + installer)
+        shell: pwsh
+        run: |
+          $s = Get-AuthenticodeSignature build-mingw\app\antrenamer-qt.exe
+          if ($s.SignerCertificate.Subject -notlike '*HCM Development Code Signing*') { Write-Error 'the exe to package is not the signed one'; exit 1 }
           powershell -ExecutionPolicy Bypass -File scripts\windows\package-win.ps1 -SkipBuild
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
-      - name: Sign the installer
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: dist-unsigned-setup
+          retention-days: 1
+          path: |
+            dist/*.zip
+            dist/*-setup.exe
+
+  sign-setup:
+    name: Sign the installer and verify (no checkout)
+    needs: package
+    if: startsWith(github.ref, 'refs/heads/hcm/v') && endsWith(github.ref, '-signed')
+    runs-on: windows-2022
+    timeout-minutes: 10
+    environment: hcm-codesign
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: dist-unsigned-setup
+          path: dist
+
+      - name: Sign the setup.exe
         shell: pwsh
         env:
+          CERT: ${{ secrets.CERTIFICATE }}
           CERT_PASS: ${{ secrets.CERTIFICATE_PASS }}
         run: |
-          $signtool = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Recurse -Filter signtool.exe |
-            Where-Object { $_.FullName -like '*x64*' } | Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
-          $setup = Get-ChildItem dist -Filter '*-setup.exe' | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $setup) { Write-Error 'setup.exe not built'; exit 1 }
-          & $signtool sign /f (Join-Path $env:RUNNER_TEMP 'hcm-codesign.pfx') /p $env:CERT_PASS.Trim() /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 $setup
-          if ($LASTEXITCODE -ne 0) { exit 1 }
-
-      - name: Remove the certificate
-        if: always()
-        shell: pwsh
-        run: Remove-Item (Join-Path $env:RUNNER_TEMP 'hcm-codesign.pfx') -Force -ErrorAction SilentlyContinue
+          $pfx = Join-Path $env:RUNNER_TEMP 'hcm-codesign.pfx'
+          try {
+            if (-not $env:CERT) { Write-Error 'CERTIFICATE secret is missing'; exit 1 }
+            [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:CERT))
+            $signtool = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Recurse -Filter signtool.exe |
+              Where-Object { $_.FullName -like '*x64*' } | Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
+            $setup = Get-ChildItem dist -Filter '*-setup.exe' | Select-Object -First 1 -ExpandProperty FullName
+            if (-not $setup) { Write-Error 'setup.exe not built'; exit 1 }
+            & $signtool sign /f $pfx /p $env:CERT_PASS.Trim() /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 $setup
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+          } finally {
+            Remove-Item $pfx -Force -ErrorAction SilentlyContinue
+          }
 
       - name: Signer and hashes
         shell: pwsh
