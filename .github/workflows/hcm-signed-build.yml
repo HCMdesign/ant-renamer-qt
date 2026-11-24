@@ -1,4 +1,5 @@
-# HCM-only workflow (not upstream). v1.2.0, 2026-11-24.
+# HCM-only workflow (not upstream). v1.3.0, 2026-11-24.
+#   1.3.0: trust the pinned HCM root on the signing runners so signtool embeds the chain; require Status Valid.
 #   1.2.0: embed the HCM intermediate in the signature (signtool /ac); without it Windows cannot chain to the root.
 #   1.1.0: key isolated from build code (four jobs); secrets moved to the hcm-codesign environment.
 #   1.0.0: first version (single job).
@@ -23,6 +24,11 @@ on:
 
 permissions:
   contents: read
+
+env:
+  # Public HCM step-ca root certificate (DER, base64): not a secret. Trusted on HCM devices via GPO.
+  HCM_ROOT_SHA256: eec3cd82fbbfd1f682fa2987fe88ebd855f95a5a9f88d9dd9dfa7a858d47cb03
+  HCM_ROOT_B64: MIIB7TCCAZKgAwIBAgIRAO91uLuOtFNGN0zQ5KSFQlAwCgYIKoZIzj0EAwIwVDEkMCIGA1UEChMbSENNIEludGVybmFsIERldmVsb3BtZW50IENBMSwwKgYDVQQDEyNIQ00gSW50ZXJuYWwgRGV2ZWxvcG1lbnQgQ0EgUm9vdCBDQTAeFw0yNjA1MTExODQwNDVaFw0zNjA1MDgxODQwNDVaMFQxJDAiBgNVBAoTG0hDTSBJbnRlcm5hbCBEZXZlbG9wbWVudCBDQTEsMCoGA1UEAxMjSENNIEludGVybmFsIERldmVsb3BtZW50IENBIFJvb3QgQ0EwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAR3PXXedtwRzs0F++pFQ+KstoZ6n1TBav55g/AhxceSlWEGfF7sSy0m8FhH3WpLzULIk9Nlypo7IePVvYB/4alLo0UwQzAOBgNVHQ8BAf8EBAMCAQYwEgYDVR0TAQH/BAgwBgEB/wIBATAdBgNVHQ4EFgQU5fhipDIH6nHKgrv+5aWwgM8WtZYwCgYIKoZIzj0EAwIDSQAwRgIhAKxT+fdVzwrysmGpH3Thvw3+bNCozC99TELjGi+xN0yMAiEA2YyBAtDfGu4iGFlEa7GnDUcQO5mCWAtebANowPENgXc=
 
 jobs:
   build:
@@ -100,6 +106,13 @@ jobs:
             if (-not $ica) { Write-Error 'the PFX holds no intermediate CA certificate'; exit 1 }
             $icaFile = Join-Path $env:RUNNER_TEMP 'hcm-intermediate.cer'
             [IO.File]::WriteAllBytes($icaFile, $ica.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
+            # signtool embeds only a chain that ends at a root trusted on the signing machine: trust the HCM root on
+            # this throwaway runner, after checking it is the real one (public cert, pinned by its SHA-256).
+            $root = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new([Convert]::FromBase64String($env:HCM_ROOT_B64))
+            $fp = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($root.RawData)).ToLower()
+            if ($fp -ne $env:HCM_ROOT_SHA256) { Write-Error "HCM root fingerprint mismatch: $fp"; exit 1 }
+            $store = [System.Security.Cryptography.X509Certificates.X509Store]::new('Root', 'LocalMachine')
+            $store.Open('ReadWrite'); $store.Add($root); $store.Close()
             $signtool = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Recurse -Filter signtool.exe |
               Where-Object { $_.FullName -like '*x64*' } | Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
             & $signtool sign /f $pfx /p $env:CERT_PASS.Trim() /ac $icaFile /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 app\antrenamer-qt.exe
@@ -188,6 +201,13 @@ jobs:
             if (-not $ica) { Write-Error 'the PFX holds no intermediate CA certificate'; exit 1 }
             $icaFile = Join-Path $env:RUNNER_TEMP 'hcm-intermediate.cer'
             [IO.File]::WriteAllBytes($icaFile, $ica.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
+            # signtool embeds only a chain that ends at a root trusted on the signing machine: trust the HCM root on
+            # this throwaway runner, after checking it is the real one (public cert, pinned by its SHA-256).
+            $root = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new([Convert]::FromBase64String($env:HCM_ROOT_B64))
+            $fp = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($root.RawData)).ToLower()
+            if ($fp -ne $env:HCM_ROOT_SHA256) { Write-Error "HCM root fingerprint mismatch: $fp"; exit 1 }
+            $store = [System.Security.Cryptography.X509Certificates.X509Store]::new('Root', 'LocalMachine')
+            $store.Open('ReadWrite'); $store.Add($root); $store.Close()
             $signtool = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Recurse -Filter signtool.exe |
               Where-Object { $_.FullName -like '*x64*' } | Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
             $setup = Get-ChildItem dist -Filter '*-setup.exe' | Select-Object -First 1 -ExpandProperty FullName
@@ -201,7 +221,7 @@ jobs:
       - name: Signer and hashes
         shell: pwsh
         run: |
-          # The HCM root is not trusted on the runner, so Status is not Valid here: check the signer and the timestamp.
+          # The signing step trusted the HCM root on this runner, so Status must be Valid, as on an HCM device.
           Expand-Archive (Get-ChildItem dist -Filter '*-portable.zip').FullName -DestinationPath zipcheck
           $files = @((Get-ChildItem dist -Filter '*-setup.exe').FullName) + @((Get-ChildItem zipcheck -Recurse -Filter antrenamer-qt.exe).FullName)
           foreach ($f in $files) {
@@ -209,6 +229,7 @@ jobs:
             Write-Host "$(Split-Path $f -Leaf): signer=$($s.SignerCertificate.Subject) timestamp=$($s.TimeStamperCertificate.Subject) status=$($s.Status)"
             if ($s.SignerCertificate.Subject -notlike '*HCM Development Code Signing*') { Write-Error "$f is not signed by HCM"; exit 1 }
             if (-not $s.TimeStamperCertificate) { Write-Error "$f has no timestamp"; exit 1 }
+            if ($s.Status -ne 'Valid') { Write-Error "$f signature is $($s.Status): $($s.StatusMessage)"; exit 1 }
           }
           Get-FileHash dist\* -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } | Tee-Object dist\SHA256SUMS-hcm.txt
 
