@@ -1,4 +1,5 @@
-# HCM-only workflow (not upstream). v1.1.0, 2026-11-24.
+# HCM-only workflow (not upstream). v1.2.0, 2026-11-24.
+#   1.2.0: embed the HCM intermediate in the signature (signtool /ac); without it Windows cannot chain to the root.
 #   1.1.0: key isolated from build code (four jobs); secrets moved to the hcm-codesign environment.
 #   1.0.0: first version (single job).
 #
@@ -91,9 +92,17 @@ jobs:
           try {
             if (-not $env:CERT) { Write-Error 'CERTIFICATE secret is missing'; exit 1 }
             [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:CERT))
+            # signtool builds the chain from the runner's stores, which lack the HCM intermediate: pass it with /ac
+            # so it is embedded (HCM devices trust only the root, via GPO).
+            $col = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2Collection
+            $col.Import($pfx, $env:CERT_PASS.Trim(), [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet)
+            $ica = $col | Where-Object { $_.Extensions | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509BasicConstraintsExtension] -and $_.CertificateAuthority } } | Select-Object -First 1
+            if (-not $ica) { Write-Error 'the PFX holds no intermediate CA certificate'; exit 1 }
+            $icaFile = Join-Path $env:RUNNER_TEMP 'hcm-intermediate.cer'
+            [IO.File]::WriteAllBytes($icaFile, $ica.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
             $signtool = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Recurse -Filter signtool.exe |
               Where-Object { $_.FullName -like '*x64*' } | Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
-            & $signtool sign /f $pfx /p $env:CERT_PASS.Trim() /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 app\antrenamer-qt.exe
+            & $signtool sign /f $pfx /p $env:CERT_PASS.Trim() /ac $icaFile /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 app\antrenamer-qt.exe
             if ($LASTEXITCODE -ne 0) { exit 1 }
           } finally {
             Remove-Item $pfx -Force -ErrorAction SilentlyContinue
@@ -171,11 +180,19 @@ jobs:
           try {
             if (-not $env:CERT) { Write-Error 'CERTIFICATE secret is missing'; exit 1 }
             [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:CERT))
+            # signtool builds the chain from the runner's stores, which lack the HCM intermediate: pass it with /ac
+            # so it is embedded (HCM devices trust only the root, via GPO).
+            $col = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2Collection
+            $col.Import($pfx, $env:CERT_PASS.Trim(), [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet)
+            $ica = $col | Where-Object { $_.Extensions | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509BasicConstraintsExtension] -and $_.CertificateAuthority } } | Select-Object -First 1
+            if (-not $ica) { Write-Error 'the PFX holds no intermediate CA certificate'; exit 1 }
+            $icaFile = Join-Path $env:RUNNER_TEMP 'hcm-intermediate.cer'
+            [IO.File]::WriteAllBytes($icaFile, $ica.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
             $signtool = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Recurse -Filter signtool.exe |
               Where-Object { $_.FullName -like '*x64*' } | Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
             $setup = Get-ChildItem dist -Filter '*-setup.exe' | Select-Object -First 1 -ExpandProperty FullName
             if (-not $setup) { Write-Error 'setup.exe not built'; exit 1 }
-            & $signtool sign /f $pfx /p $env:CERT_PASS.Trim() /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 $setup
+            & $signtool sign /f $pfx /p $env:CERT_PASS.Trim() /ac $icaFile /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 $setup
             if ($LASTEXITCODE -ne 0) { exit 1 }
           } finally {
             Remove-Item $pfx -Force -ErrorAction SilentlyContinue
